@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>小白团子 Companion - 究极记忆丝滑版</title>
+    <title>小白团子 Companion - 时空治愈版</title>
     <style>
         :root {
-            --bg-night: #0f172a;
+            --bg-current: #0f172a;
             --spirit-main: #ffffff;
             --mouth-color: #475569;
             --blush-color: #fecaca;
@@ -15,7 +15,7 @@
         * { margin: 0; padding: 0; box-sizing: border-box; outline: none; -webkit-tap-highlight-color: transparent; }
 
         body {
-            background-color: var(--bg-night);
+            background: var(--bg-current);
             color: white;
             font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
             height: 100vh;
@@ -23,7 +23,7 @@
             flex-direction: column;
             align-items: center;
             overflow: hidden;
-            transition: background 2s ease;
+            transition: background 2s ease; /* 切换背景时的丝滑过渡 */
         }
 
         #stars-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; }
@@ -36,6 +36,16 @@
             background: rgba(255,255,255,0.05); padding: 8px 12px; border-radius: 12px;
         }
 
+        /* 温情纸条按钮 */
+        .note-trigger {
+            position: absolute; top: 20px; right: 20px; z-index: 200;
+            width: 45px; height: 45px; background: rgba(255,255,255,0.1);
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            cursor: pointer; font-size: 1.4rem; border: 1px solid rgba(255,255,255,0.2);
+            transition: 0.3s;
+        }
+        .note-trigger:hover { transform: scale(1.1); background: rgba(255,255,255,0.2); }
+
         .main-stage {
             position: relative; flex: 1; width: 100%;
             display: flex; flex-direction: column; justify-content: center; align-items: center;
@@ -45,11 +55,12 @@
         /* 引导界面 */
         #onboarding {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: var(--bg-night); z-index: 2000;
+            background: #0f172a; z-index: 2000;
             display: flex; flex-direction: column; justify-content: center; align-items: center;
             padding: 30px; text-align: center;
         }
 
+        /* 对话气泡 */
         .speech-bubble {
             background: rgba(255, 255, 255, 0.95);
             color: #1e293b; padding: 15px 25px; border-radius: 25px;
@@ -64,33 +75,21 @@
             border-left: 10px solid transparent; border-right: 10px solid transparent; border-top: 10px solid white;
         }
 
-        /* 输入框 */
         .input-box {
             width: 100%; max-width: 280px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);
             border-radius: 15px; color: white; padding: 12px; font-size: 1rem; text-align: center; margin-bottom: 15px;
         }
-        .action-btn { background: white; color: var(--bg-night); border: none; padding: 10px 30px; border-radius: 20px; font-weight: bold; cursor: pointer; }
+        .action-btn { background: white; color: #1e293b; border: none; padding: 10px 30px; border-radius: 20px; font-weight: bold; cursor: pointer; }
 
-        /* 团子结构：关键修复点 */
-        .tilt-box { 
-            position: relative; 
-            transition: transform 0.2s ease-out; 
-            perspective: 600px;
-            z-index: 10;
-        }
-
+        /* 团子结构隔离 */
+        .tilt-box { position: relative; transition: transform 0.2s ease-out; perspective: 600px; z-index: 10; }
         .spirit {
-            width: 135px; height: 115px;
-            background: var(--spirit-main);
-            border-radius: 50% 50% 45% 45%;
-            position: relative;
-            box-shadow: 0 0 35px rgba(255,255,255,0.2);
-            cursor: pointer;
-            /* 基础状态下的过渡 */
+            width: 135px; height: 115px; background: var(--spirit-main); border-radius: 50% 50% 45% 45%;
+            position: relative; box-shadow: 0 0 35px rgba(255,255,255,0.2); cursor: pointer;
             transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275), background 0.5s;
         }
 
-        /* 呼吸模式的强制 CSS 类 */
+        /* 呼吸强制类 */
         .breath-inhale { transition: transform 4s ease-in-out !important; transform: scale(1.6) !important; }
         .breath-hold { transition: transform 2s ease-in-out !important; transform: scale(1.6) !important; }
         .breath-exhale { transition: transform 6s ease-in-out !important; transform: scale(1.0) !important; }
@@ -100,6 +99,7 @@
         .eyes-row { display: flex; justify-content: center; gap: 35px; margin-bottom: 15px; }
         .eye { width: 8px; height: 8px; background: #334155; border-radius: 50%; transition: all 0.2s; }
         .eye.happy { transform: scaleY(0.2) translateY(5px) !important; }
+        .eye.blink { transform: scaleY(0.1) !important; }
 
         .blush-row { position: absolute; top: 12px; width: 100%; display: flex; justify-content: center; gap: 55px; opacity: 0.3; }
         .blush { width: 15px; height: 8px; background: var(--blush-color); border-radius: 50%; filter: blur(2px); transition: 0.5s; }
@@ -115,6 +115,7 @@
         @keyframes munch { 0%, 100% { transform: scale(1.1, 0.9); } 50% { transform: scale(0.9, 1.1); } }
         .munching { animation: munch 0.4s 3 !important; }
 
+        /* 底部导航 */
         .dock {
             position: fixed; bottom: 30px; display: flex; gap: 15px;
             background: rgba(255,255,255,0.08); padding: 10px 20px; border-radius: 40px;
@@ -131,11 +132,16 @@
 
     <div id="stars-container"></div>
     
+    <!-- 记忆徽章 -->
     <div class="memory-badge" id="memory-badge">
         <span id="badge-name">...</span><br>
         守护星星: <span id="badge-stars">0</span>
     </div>
 
+    <!-- 温情纸条按钮 -->
+    <div class="note-trigger" onclick="giveNote()" title="团子的纸条">✉️</div>
+
+    <!-- 起名界面 -->
     <div id="onboarding">
         <h2 style="margin-bottom: 30px; font-weight: 300; line-height: 1.6;">你好呀，我是新来的。<br>我该怎么称呼你呢？</h2>
         <input type="text" id="name-input" class="input-box" placeholder="输入你的名字..." maxlength="8">
@@ -145,9 +151,10 @@
     <div class="main-stage">
         <div class="speech-bubble" id="bubble">...</div>
 
+        <!-- 倾诉区 -->
         <div id="vent-area" style="display: none; flex-direction: column; align-items: center; margin-bottom: 40px; z-index: 100;">
-            <input type="text" id="vent-input" class="input-box" placeholder="把烦恼写在这里..." autocomplete="off">
-            <button class="action-btn" onclick="startSwallowing()">交给团子吃掉</button>
+            <input type="text" id="vent-input" class="input-box" placeholder="把坏心情写在这里..." autocomplete="off">
+            <button class="action-btn" onclick="startSwallowing()">交给团子消化</button>
         </div>
 
         <div class="tilt-box" id="tilt-box">
@@ -157,7 +164,7 @@
                         <div class="eye"></div>
                         <div class="eye"></div>
                     </div>
-                    <div class="blush-row" id="blush-row">
+                    <div class="blush-row">
                         <div class="blush"></div>
                         <div class="blush"></div>
                     </div>
@@ -175,6 +182,7 @@
     </div>
 
     <script>
+        // --- 核心存储 ---
         const Memory = {
             getUserName: () => localStorage.getItem('spirit_name'),
             setUserName: (n) => localStorage.setItem('spirit_name', n),
@@ -206,6 +214,9 @@
 
         window.onload = () => {
             createStars();
+            updateTimeTheme(); // 初始化时空背景
+            setInterval(updateTimeTheme, 60000); // 每分钟检查一次时间
+            
             if (!Memory.getUserName()) {
                 document.getElementById('onboarding').style.display = 'flex';
             } else {
@@ -214,6 +225,57 @@
             }
         };
 
+        // --- 功能：时空感知系统 ---
+        function updateTimeTheme() {
+            const hour = new Date().getHours();
+            let bgColor = "";
+            let timeGreeting = "";
+
+            if (hour >= 5 && hour < 9) {
+                bgColor = "linear-gradient(180deg, #ff9a9e 0%, #fad0c4 100%)"; // 晨曦
+                timeGreeting = "早安呀。清晨的空气凉凉的，记得喝杯温水。";
+            } else if (hour >= 9 && hour < 17) {
+                bgColor = "linear-gradient(180deg, #a1c4fd 0%, #c2e9fb 100%)"; // 白昼
+                timeGreeting = "是在忙碌吗？累了就点点我，休息一下。";
+            } else if (hour >= 17 && hour < 20) {
+                bgColor = "linear-gradient(180deg, #f6d365 0%, #fda085 100%)"; // 黄昏
+                timeGreeting = "夕阳很美呢。今天的我们也辛苦了。";
+            } else {
+                bgColor = "linear-gradient(180deg, #0f172a 0%, #1e293b 100%)"; // 深夜
+                timeGreeting = "夜深了。没关系的，我会一直守在这里。";
+            }
+
+            document.body.style.background = bgColor;
+            window.currentTimeGreeting = timeGreeting; // 存入全局供刷新使用
+        }
+
+        // --- 功能：温情纸条 ---
+        const notes = [
+            "你已经做得很好了，真的。",
+            "偶尔停下来不努力，也是可以的。",
+            "你不需要成为任何人，你是你就很好。",
+            "允许自己难过一会儿，明天又是新的。",
+            "那些让你难受的事，都会过去的。",
+            "我会永远站在你这一边。",
+            "你的存在本身，就是很有价值的事。",
+            "今天也要记得多爱自己一点点呀。",
+            "没关系，我可以抱抱你吗？",
+            "外面的世界很吵，但这里永远安静。"
+        ];
+
+        function giveNote() {
+            if(currentMode === 'breath') return;
+            spirit.style.transform = "scale(1.2) rotate(5deg)";
+            const randomNote = notes[Math.floor(Math.random()*notes.length)];
+            showMessage(`(从背后拿出一张纸条给 ${Memory.getUserName()})：\n"${randomNote}"`);
+            blushes.forEach(b => b.classList.add('shy'));
+            setTimeout(() => {
+                if(currentMode === 'idle') spirit.style.transform = "";
+                blushes.forEach(b => b.classList.remove('shy'));
+            }, 2000);
+        }
+
+        // --- 基础逻辑保持 ---
         function saveName() {
             const val = document.getElementById('name-input').value.trim();
             if(val) {
@@ -229,7 +291,7 @@
         function welcomeUser() {
             Memory.refresh();
             const n = Memory.getUserName();
-            const greets = [`${n}，你回来啦。`, `今天辛苦吗，${n}？`, `我会一直陪着 ${n} 的。`, `贴贴 ${n}，嘿嘿。`];
+            const greets = [`${n}，你回来啦。`, window.currentTimeGreeting, `今天的守护星也在闪闪发光呢。` ];
             showMessage(greets[Math.floor(Math.random()*greets.length)]);
         }
 
@@ -241,14 +303,10 @@
         function switchMode(mode, el) {
             clearTimeout(breathTimer);
             currentMode = mode;
-            
-            // 关键：进入任何模式前重置团子状态，特别是清除行内 style
             spirit.className = 'spirit';
             spirit.style.transform = ""; 
-            
             ventArea.style.display = 'none';
             mouth.classList.remove('open');
-            document.body.style.background = "var(--bg-night)";
             document.querySelectorAll('.dock-item').forEach(d => d.classList.remove('active'));
             el.classList.add('active');
 
@@ -267,20 +325,14 @@
 
         function runBreath() {
             if(currentMode !== 'breath') return;
-            
-            // 强制清理可能干扰的 style
-            spirit.style.transform = ""; 
-
             const cycle = () => {
                 if(currentMode !== 'breath') return;
                 showMessage("慢慢吸气...");
                 spirit.className = 'spirit breath-inhale';
-
                 breathTimer = setTimeout(() => {
                     if(currentMode !== 'breath') return;
                     showMessage("停住一会儿...");
                     spirit.className = 'spirit breath-hold';
-
                     breathTimer = setTimeout(() => {
                         if(currentMode !== 'breath') return;
                         showMessage("缓缓呼气...");
@@ -296,36 +348,30 @@
             const input = document.getElementById('vent-input');
             const txt = input.value.trim();
             if(!txt) return;
-
             mouth.classList.add('open');
             eyes.forEach(e => e.classList.add('happy'));
             blushes.forEach(b => b.classList.add('shy'));
             showMessage("啊——呜！");
-            
             const rect = input.getBoundingClientRect();
             const cloud = document.createElement('div');
             cloud.className = 'trouble-cloud'; cloud.innerText = txt;
             cloud.style.left = rect.left+'px'; cloud.style.top = rect.top+'px';
             document.body.appendChild(cloud);
-
             setTimeout(() => {
                 const sRect = spirit.getBoundingClientRect();
                 cloud.style.left = (sRect.left + sRect.width/2 - 20) + 'px';
                 cloud.style.top = (sRect.top + sRect.height/2 + 20) + 'px';
                 cloud.style.transform = "scale(0.1)"; cloud.style.opacity = "0";
             }, 50);
-
             setTimeout(() => {
                 cloud.remove(); input.value = "";
                 mouth.classList.remove('open');
                 spirit.classList.add('munching');
-                showMessage("嚼吧嚼吧... 正在消化...");
-
                 setTimeout(() => {
                     spirit.classList.remove('munching');
                     const stars = Memory.addStar();
                     Memory.refresh();
-                    showMessage(`吃掉啦！这是为 ${Memory.getUserName()} 存下的第 ${stars} 颗守护星。`);
+                    showMessage(`好吃！已经全部消化啦。这是第 ${stars} 颗守护星。`);
                     createBurst();
                     setTimeout(() => {
                         eyes.forEach(e => e.classList.remove('happy'));
@@ -339,7 +385,7 @@
             if(currentMode === 'breath') return;
             spirit.style.transform = "scale(1.1) translateY(-10px)";
             blushes.forEach(b => b.classList.add('shy'));
-            showMessage(`蹭蹭 ${Memory.getUserName()} ~`);
+            showMessage(`摸摸 ${Memory.getUserName()} 的头，暖暖的。`);
             setTimeout(() => { 
                 if(currentMode !== 'breath') spirit.style.transform = ""; 
                 blushes.forEach(b => b.classList.remove('shy'));
@@ -347,7 +393,7 @@
         }
 
         document.addEventListener('mousemove', (e) => {
-            if(currentMode === 'sleep') return;
+            if(currentMode === 'sleep' || currentMode === 'breath') return;
             const rect = spirit.getBoundingClientRect();
             const centerX = rect.left + rect.width / 2;
             const centerY = rect.top + rect.height / 2;
@@ -374,7 +420,7 @@
         }
 
         function createBurst() {
-            for(let i=0; i<10; i++) {
+            for(let i=0; i<8; i++) {
                 const p = document.createElement('div');
                 p.innerText = "✨"; p.style.position = "fixed";
                 p.style.left = "50%"; p.style.top = "60%";
@@ -385,7 +431,7 @@
                     p.style.transform = `translate(${Math.cos(a)*150}px, ${Math.sin(a)*150}px) scale(0)`;
                     p.style.opacity = 0;
                 }, 50);
-                setTimeout(() => p.remove(), 1500);
+                setTimeout(() => p.remove(), 1000);
             }
         }
     </script>
