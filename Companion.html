@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>小白团子 Companion - 害羞治愈版</title>
+    <style>
+        :root {
+            --bg-night: #0f172a;
+            --spirit-main: #ffffff;
+            --mouth-color: #475569;
+            --blush-color: #fecaca; /* 淡淡的粉红 */
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; outline: none; -webkit-tap-highlight-color: transparent; }
+
+        body {
+            background-color: var(--bg-night);
+            color: white;
+            font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow: hidden;
+            transition: background 2s ease;
+        }
+
+        #stars-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; }
+
+        .main-stage {
+            position: relative;
+            flex: 1; width: 100%;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            z-index: 10; padding-bottom: 80px;
+        }
+
+        /* 对话气泡 */
+        .speech-bubble {
+            background: rgba(255, 255, 255, 0.95);
+            color: #1e293b;
+            padding: 15px 25px; border-radius: 25px;
+            font-size: 1rem; margin-bottom: 60px;
+            max-width: 85%; text-align: center;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            position: relative; opacity: 0; transform: translateY(10px);
+            transition: 0.5s; line-height: 1.5;
+            z-index: 20;
+        }
+        .speech-bubble::after {
+            content: ''; position: absolute; bottom: -10px; left: 50%; transform: translateX(-50%);
+            border-left: 10px solid transparent; border-right: 10px solid transparent; border-top: 10px solid white;
+        }
+
+        /* 倾诉区域 */
+        #vent-area {
+            width: 85%; max-width: 350px; margin-bottom: 40px;
+            display: none; flex-direction: column; gap: 12px;
+            z-index: 30;
+        }
+        #vent-input {
+            width: 100%; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 15px; color: white; padding: 12px; font-size: 1rem; text-align: center;
+        }
+        #vent-btn { background: white; color: var(--bg-night); border: none; padding: 10px; border-radius: 20px; font-weight: bold; cursor: pointer; }
+
+        /* 团子结构 */
+        .tilt-box {
+            position: relative;
+            transition: transform 0.2s ease-out;
+            perspective: 500px;
+        }
+
+        .spirit {
+            width: 135px; height: 115px;
+            background: var(--spirit-main);
+            border-radius: 50% 50% 45% 45%;
+            position: relative;
+            box-shadow: 0 0 35px rgba(255,255,255,0.2);
+            z-index: 2;
+            cursor: pointer;
+            transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275), background 0.5s;
+        }
+
+        /* 五官容器：稍微拉开距离 */
+        .face { position: absolute; top: 40px; width: 100%; height: 100%; pointer-events: none; }
+        
+        /* 眼睛：往上提 */
+        .eyes-row { display: flex; justify-content: center; gap: 35px; margin-bottom: 15px; }
+        .eye { width: 8px; height: 8px; background: #334155; border-radius: 50%; transition: all 0.2s; }
+        .eye.happy { transform: scaleY(0.2) translateY(5px) !important; }
+
+        /* 腮红：新增羞羞脸 */
+        .blush-row {
+            position: absolute; top: 12px; width: 100%;
+            display: flex; justify-content: center; gap: 55px;
+            opacity: 0.4; transition: all 0.5s;
+        }
+        .blush { width: 15px; height: 8px; background: var(--blush-color); border-radius: 50%; filter: blur(2px); }
+        .blush.shy { opacity: 1; transform: scale(1.3); filter: blur(1px); background: #fca5a5; }
+
+        /* 嘴巴：往下移，保持可爱弧线 */
+        .mouth {
+            position: absolute; top: 28px; left: 50%; transform: translateX(-50%);
+            width: 14px; height: 7px;
+            border-bottom: 2.5px solid var(--mouth-color);
+            border-radius: 0 0 10px 10px;
+            transition: all 0.3s;
+        }
+        .mouth.open {
+            top: 22px; width: 28px; height: 28px; background: #334155;
+            border: none; border-radius: 50%; box-shadow: inset 0 -6px 0 #fca5a5;
+        }
+
+        /* 咀嚼动画 */
+        @keyframes munch { 0%, 100% { transform: scale(1.1, 0.9); } 50% { transform: scale(0.9, 1.1); } }
+        .munching { animation: munch 0.4s 3; }
+
+        /* 呼吸类 */
+        .breath-inhale { transition: transform 4s ease-in-out !important; transform: scale(1.6); }
+        .breath-hold { transition: transform 2s ease-in-out !important; transform: scale(1.6); }
+        .breath-exhale { transition: transform 6s ease-in-out !important; transform: scale(1.0); }
+
+        .dock {
+            position: fixed; bottom: 30px; display: flex; gap: 15px;
+            background: rgba(255,255,255,0.08); padding: 10px 20px; border-radius: 40px;
+            backdrop-filter: blur(15px); border: 1px solid rgba(255,255,255,0.1); z-index: 100;
+        }
+        .dock-item { width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; border-radius: 50%; cursor: pointer; font-size: 1.3rem; transition: 0.3s; }
+        .dock-item.active { background: rgba(255,255,255,0.2); box-shadow: 0 0 15px rgba(255,255,255,0.2); }
+
+        .sleeping { opacity: 0.5; transform: scale(0.9) translateY(20px) !important; }
+        .trouble-cloud { position: fixed; padding: 8px 15px; background: rgba(148,163,184,0.9); color: white; border-radius: 20px; font-size: 0.8rem; pointer-events: none; z-index: 100; transition: all 0.8s cubic-bezier(0.6, -0.28, 0.735, 0.045); }
+    </style>
+</head>
+<body>
+
+    <div id="stars-container"></div>
+
+    <div class="main-stage">
+        <div class="speech-bubble" id="bubble">...</div>
+
+        <div id="vent-area">
+            <input type="text" id="vent-input" placeholder="把不开心写在这里..." autocomplete="off">
+            <button id="vent-btn" onclick="startSwallowing()">交给团子吃掉</button>
+        </div>
+
+        <div class="tilt-box" id="tilt-box">
+            <div class="spirit" id="spirit" onclick="handlePet()">
+                <div class="face">
+                    <div class="eyes-row">
+                        <div class="eye" id="eye-l"></div>
+                        <div class="eye" id="eye-r"></div>
+                    </div>
+                    <div class="blush-row" id="blush-row">
+                        <div class="blush"></div>
+                        <div class="blush"></div>
+                    </div>
+                    <div class="mouth" id="mouth"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="dock">
+        <div class="dock-item active" onclick="switchMode('idle', this)">🏠</div>
+        <div class="dock-item" onclick="switchMode('breath', this)">🌬️</div>
+        <div class="dock-item" onclick="switchMode('vent', this)">🕳️</div>
+        <div class="dock-item" onclick="switchMode('sleep', this)">🌙</div>
+    </div>
+
+    <script>
+        const spirit = document.getElementById('spirit');
+        const tiltBox = document.getElementById('tilt-box');
+        const bubble = document.getElementById('bubble');
+        const mouth = document.getElementById('mouth');
+        const ventArea = document.getElementById('vent-area');
+        const blushRow = document.getElementById('blush-row');
+        const eyes = document.querySelectorAll('.eye');
+        const blushes = document.querySelectorAll('.blush');
+        
+        let currentMode = 'idle';
+        let breathTimer = null;
+
+        window.onload = () => {
+            showMessage("嘿，我一直在等你会合。无论发生什么，我都在。");
+            createStars();
+        };
+
+        // --- 核心：充满仪式感的吞噬过程 ---
+        function startSwallowing() {
+            const input = document.getElementById('vent-input');
+            const text = input.value.trim();
+            if (!text) return;
+
+            mouth.classList.add('open');
+            eyes.forEach(e => e.classList.add('happy'));
+            blushes.forEach(b => b.classList.add('shy'));
+            showMessage("啊——呜！");
+            
+            const rect = input.getBoundingClientRect();
+            const cloud = document.createElement('div');
+            cloud.className = 'trouble-cloud';
+            cloud.innerText = text;
+            cloud.style.left = rect.left + 'px'; cloud.style.top = rect.top + 'px';
+            document.body.appendChild(cloud);
+
+            setTimeout(() => {
+                const spiritRect = spirit.getBoundingClientRect();
+                cloud.style.left = (spiritRect.left + spiritRect.width/2 - 20) + 'px';
+                cloud.style.top = (spiritRect.top + spiritRect.height/2 + 20) + 'px';
+                cloud.style.transform = "scale(0.1)";
+                cloud.style.opacity = "0";
+            }, 50);
+
+            setTimeout(() => {
+                cloud.remove();
+                input.value = "";
+                mouth.classList.remove('open');
+                eyes.forEach(e => e.classList.remove('happy'));
+                
+                spirit.classList.add('munching');
+                showMessage("嚼吧嚼吧... 消化掉...");
+
+                setTimeout(() => {
+                    spirit.classList.remove('munching');
+                    eyes.forEach(e => e.classList.add('happy'));
+                    blushes.forEach(b => b.classList.add('shy'));
+                    showMessage("真好吃！已经全部变成能量啦~");
+                    createBurstEffect();
+
+                    setTimeout(() => {
+                        eyes.forEach(e => e.classList.remove('happy'));
+                        blushes.forEach(b => b.classList.remove('shy'));
+                        if(currentMode === 'vent') showMessage("还要再吃掉一个烦恼吗？");
+                    }, 2500);
+                }, 1200);
+            }, 850);
+        }
+
+        // --- 模式切换 ---
+        function switchMode(mode, el) {
+            clearTimeout(breathTimer);
+            currentMode = mode;
+            ventArea.style.display = 'none';
+            spirit.className = 'spirit';
+            spirit.style.transform = "";
+            mouth.className = 'mouth';
+            blushes.forEach(b => b.classList.remove('shy'));
+            document.body.style.background = "var(--bg-night)";
+            document.querySelectorAll('.dock-item').forEach(d => d.classList.remove('active'));
+            el.classList.add('active');
+
+            if(mode === 'idle') showMessage("就这样呆一会儿，也挺好的。");
+            else if(mode === 'breath') startBreathCycle();
+            else if(mode === 'vent') {
+                ventArea.style.display = 'flex';
+                showMessage("写下你的烦恼，我帮你吃掉它。");
+            } 
+            else if(mode === 'sleep') {
+                document.body.style.background = "#020617";
+                spirit.classList.add('sleeping');
+                showMessage("嘘... 睡个好觉吧。");
+            }
+        }
+
+        function startBreathCycle() {
+            if(currentMode !== 'breath') return;
+            showMessage("慢慢吸气...");
+            spirit.className = 'spirit breath-inhale';
+            breathTimer = setTimeout(() => {
+                if(currentMode !== 'breath') return;
+                showMessage("停住一会儿...");
+                spirit.className = 'spirit breath-hold';
+                breathTimer = setTimeout(() => {
+                    if(currentMode !== 'breath') return;
+                    showMessage("缓缓呼气...");
+                    spirit.className = 'spirit breath-exhale';
+                    breathTimer = setTimeout(startBreathCycle, 6000);
+                }, 2000);
+            }, 4000);
+        }
+
+        function handlePet() {
+            if(currentMode === 'breath') return;
+            spirit.style.transform = "scale(1.1) translateY(-10px)";
+            blushes.forEach(b => b.classList.add('shy'));
+            const msgs = ["蹭蹭~", "你好暖和", "最喜欢你啦", "我会一直在的", "贴贴~"];
+            showMessage(msgs[Math.floor(Math.random()*msgs.length)]);
+            setTimeout(() => { 
+                if(currentMode !== 'breath') spirit.style.transform = "scale(1)"; 
+                blushes.forEach(b => b.classList.remove('shy'));
+            }, 800);
+        }
+
+        document.addEventListener('mousemove', (e) => {
+            if(currentMode === 'sleep') return;
+            const rect = spirit.getBoundingClientRect();
+            const centerX = rect.left + rect.width / 2;
+            const centerY = rect.top + rect.height / 2;
+            const angle = Math.atan2(e.clientY - centerY, e.clientX - centerX);
+            document.querySelectorAll('.eye').forEach(eye => {
+                if(!eye.classList.contains('happy')) {
+                    eye.style.transform = `translate(${Math.cos(angle)*4}px, ${Math.sin(angle)*4}px)`;
+                }
+            });
+            const rotateY = (e.clientX - centerX) / window.innerWidth * 15;
+            const rotateX = -(e.clientY - centerY) / window.innerHeight * 15;
+            tiltBox.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+        });
+
+        function showMessage(text) {
+            bubble.style.opacity = 0;
+            setTimeout(() => { bubble.innerText = text; bubble.style.opacity = 1; }, 300);
+        }
+
+        function createStars() {
+            const container = document.getElementById('stars-container');
+            for(let i=0; i<40; i++) {
+                const s = document.createElement('div');
+                s.style.position = 'absolute';
+                s.style.left = Math.random()*100+'%'; s.style.top = Math.random()*100+'%';
+                s.style.width = '2px'; s.style.height = '2px'; s.style.background = 'white';
+                s.style.opacity = Math.random()*0.5;
+                container.appendChild(s);
+            }
+        }
+
+        function createBurstEffect() {
+            for(let i=0; i<10; i++) {
+                const p = document.createElement('div');
+                p.innerText = "✨"; p.style.position = "fixed";
+                p.style.left = "50%"; p.style.top = "60%";
+                p.style.transition = "1.5s ease-out";
+                document.body.appendChild(p);
+                const a = Math.random() * Math.PI * 2;
+                setTimeout(() => {
+                    p.style.transform = `translate(${Math.cos(a)*150}px, ${Math.sin(a)*150}px) scale(0)`;
+                    p.style.opacity = 0;
+                }, 50);
+                setTimeout(() => p.remove(), 1500);
+            }
+        }
+    </script>
+</body>
+</html>
