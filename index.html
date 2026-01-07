@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>小白团子 Companion - 手机丝滑版</title>
+    <title>小白团子 Companion - 终极丝滑版</title>
     <style>
         :root {
             --spirit-main: #ffffff;
@@ -12,22 +12,29 @@
             --bg-color: #0f172a;
         }
 
-        /* 全局防止手机端意外选中文本或触发长按菜单 */
+        /* 核心：彻底锁定手机网页，不许晃动 */
+        html, body {
+            margin: 0; padding: 0;
+            width: 100vw; height: 100vh;
+            overflow: hidden; /* 严禁滚动 */
+            position: fixed; /* 强制定位，防止橡皮筋效果 */
+            overscroll-behavior: none; /* 禁用手机端下拉刷新和侧滑返回 */
+        }
+
         * { 
-            margin: 0; padding: 0; box-sizing: border-box; outline: none; 
+            box-sizing: border-box; outline: none; 
             -webkit-tap-highlight-color: transparent;
             user-select: none; 
+            -webkit-touch-callout: none; /* 禁用长按弹出菜单 */
         }
 
         body {
             background: var(--bg-color);
             color: white;
             font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
-            height: 100vh;
             display: flex;
             flex-direction: column;
             align-items: center;
-            overflow: hidden;
             transition: background 1.5s ease;
         }
 
@@ -88,8 +95,6 @@
             border-left: 10px solid transparent; border-right: 10px solid transparent; border-top: 10px solid white;
         }
 
-        #focus-timer { font-size: 2.8rem; font-weight: 200; margin-bottom: 20px; letter-spacing: 2px; display: none; }
-
         /* ---------------- 团子结构 ---------------- */
         .tilt-box { position: relative; transition: transform 0.2s ease-out; perspective: 600px; z-index: 10; }
         .breath-wrap { transition: transform 0.6s ease-in-out; position: relative; }
@@ -98,9 +103,8 @@
             width: 135px; height: 115px; background: var(--spirit-main); border-radius: 50% 50% 45% 45%;
             position: relative; box-shadow: 0 0 35px rgba(255,255,255,0.2); cursor: pointer;
             transform-origin: center bottom;
-            /* 关键：防止手机手势冲突 */
-            touch-action: none; 
-            transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), background 0.5s;
+            touch-action: none; /* 彻底禁用系统手势 */
+            transition: transform 0.1s linear, background 0.5s, box-shadow 0.5s;
         }
 
         /* 动画类 */
@@ -117,9 +121,9 @@
         @keyframes swallow-gulp { 0% { transform: scale(1.18, 0.88); } 50% { transform: scale(0.85, 1.25) translateY(-25px); } 100% { transform: scale(1, 1) translateY(0); } }
 
         /* 五官 */
-        .face { position: absolute; top: 45px; width: 100%; pointer-events: none; transition: 0.3s; }
-        .eyes { display: flex; justify-content: center; gap: 35px; margin-bottom: 12px; }
-        .eye { width: 8px; height: 8px; background: #334155; border-radius: 50%; transition: 0.3s; position: relative; }
+        .face { position: absolute; top: 45px; width: 100%; pointer-events: none; transition: 0.2s; }
+        .eyes { display: flex; justify-content: center; gap: 35px; margin-bottom: 8px; }
+        .eye { width: 8px; height: 8px; background: #334155; border-radius: 50%; transition: 0.2s; position: relative; }
         .eye.petting { height: 3px; border-radius: 10px; transform: scaleX(1.2); }
         .eye.happy { background: transparent !important; width: 10px; height: 10px; border-top: 3px solid #334155; border-radius: 50% 50% 0 0; transform: translateY(2px) !important; }
         .eye.focusing { transform: scaleY(0.4) !important; border-radius: 2px; }
@@ -132,23 +136,21 @@
         .mouth {
             position: absolute; top: 32px; left: 50%; transform: translateX(-50%);
             width: 14px; height: 7px; border-bottom: 2.5px solid var(--mouth-color);
-            border-radius: 0 0 10px 10px; transition: 0.3s;
+            border-radius: 0 0 10px 10px; transition: all 0.3s;
         }
-        .mouth.open { top: 26px; width: 30px; height: 26px; background: #334155; border: none; border-radius: 40% 40% 55% 55%; box-shadow: inset 0 -8px 0 #fca5a5; }
+        .mouth.open { top: 26px; width: 30px; height: 24px; background: #334155; border: none; border-radius: 40% 40% 50% 50%; box-shadow: inset 0 -8px 0 #fca5a5; }
 
         .zzz { position: absolute; top: -20px; right: 0; font-size: 20px; opacity:0; display: none; animation: zzz-float 3s infinite; }
         @keyframes zzz-float { 0% { transform: translate(0,0) scale(0.5); opacity:0; } 20% { opacity:1; } 100% { transform: translate(30px, -60px) scale(1.2); opacity:0; } }
 
-        /* UI 组件 */
-        #onboarding { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #0f172a; z-index: 2000; display: none; flex-direction: column; justify-content: center; align-items: center; padding: 30px; text-align: center; }
-        .input-box { width: 100%; max-width: 280px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 15px; color: white; padding: 12px; font-size: 1rem; text-align: center; margin-bottom: 15px; }
+        /* UI 按钮 */
         .action-btn { background: white; color: #1e293b; border: none; padding: 10px 30px; border-radius: 20px; font-weight: bold; cursor: pointer; transition: 0.3s; }
-
         .dock { position: fixed; bottom: 30px; display: flex; gap: 15px; background: rgba(255,255,255,0.08); padding: 10px 20px; border-radius: 40px; backdrop-filter: blur(15px); border: 1px solid rgba(255,255,255,0.1); z-index: 100; }
         .dock-item { width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; border-radius: 50%; cursor: pointer; font-size: 1.3rem; transition: 0.3s; opacity: 0.6; }
         .dock-item.active { opacity: 1; background: rgba(255,255,255,0.2); }
 
-        .trouble-cloud, .gift-cloud { position: fixed; padding: 8px 15px; border-radius: 20px; z-index: 2000; transition: all 1s cubic-bezier(0.6, -0.28, 0.735, 0.045); pointer-events: none; }
+        #onboarding { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #0f172a; z-index: 2000; display: none; flex-direction: column; justify-content: center; align-items: center; padding: 30px; text-align: center; }
+        .input-box { width: 100%; max-width: 280px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 15px; color: white; padding: 12px; font-size: 1rem; text-align: center; margin-bottom: 15px; }
     </style>
 </head>
 <body>
@@ -183,7 +185,7 @@
     </div>
 
     <div class="main-stage">
-        <div id="focus-timer">25:00</div>
+        <div id="focus-timer" style="font-size: 2.8rem; font-weight: 200; margin-bottom: 20px; display: none;">25:00</div>
         <div class="speech-bubble" id="bubble">...</div>
 
         <div id="vent-area" style="display: none; flex-direction: column; align-items: center; margin-bottom: 40px; z-index: 100;">
@@ -194,10 +196,13 @@
         <div class="tilt-box" id="tilt-box">
             <div class="zzz" id="zzz">Zzz</div>
             <div class="breath-wrap" id="breath-wrap">
-                <div class="spirit" id="spirit" style="transform: translateZ(0);">
+                <div class="spirit" id="spirit">
                     <div class="face" id="face">
                         <div class="eyes"><div class="eye"></div><div class="eye"></div></div>
-                        <div class="blush-container"><div class="blush"></div><div class="blush"></div></div>
+                        <div class="blush-container">
+                            <div class="blush"></div>
+                            <div class="blush"></div>
+                        </div>
                         <div class="mouth" id="mouth"></div>
                     </div>
                 </div>
@@ -250,10 +255,9 @@
             setTimeout(() => { dom.bubble.innerText = txt; dom.bubble.style.opacity = 1; dom.bubble.style.transform = "translateY(0)"; }, 300);
         }
 
-        // --- 核心：深度适配手机的交互 ---
+        // --- 核心修复：手机端手势锁定与顺滑揉揉 ---
         const startInteraction = (e, x, y) => {
-            // 阻止背景滚动等默认行为
-            if(e.cancelable) e.preventDefault(); 
+            if(e.cancelable) e.preventDefault(); // 阻止手机系统默认手势
             
             if(currentMode !== 'idle') {
                 if(currentMode === 'sleep') {
@@ -267,7 +271,7 @@
             petStartPos = {x, y};
             dom.eyes.forEach(e => e.classList.add('petting'));
             dom.blushes.forEach(b => b.classList.add('shy'));
-            dom.spirit.style.transition = "none";
+            dom.spirit.style.transition = "none"; // 揉捏时去除延迟，实现丝滑跟随
         };
 
         const stopInteraction = (e, x, y) => {
@@ -276,7 +280,7 @@
             
             const dist = Math.sqrt(Math.pow(x - petStartPos.x, 2) + Math.pow(y - petStartPos.y, 2));
             
-            if(dist < 15) { // 稍微放宽点击判定
+            if(dist < 15) { // 点击判定
                 handlePoke();
             } else {
                 showMessage(["揉揉揉~好舒服哦", "嘿嘿，暖洋洋的", "最喜欢主人的手心啦"][Math.floor(Math.random()*3)]);
@@ -290,10 +294,13 @@
 
         const moveInteraction = (e, x, y) => {
             if(!isPetting) return;
-            if(e.cancelable) e.preventDefault(); // 关键：阻止手机滑屏退出
+            if(e.cancelable) e.preventDefault(); // 关键：彻底阻止手机左右滑屏
 
             const r = dom.spirit.getBoundingClientRect();
-            const dx = (x - (r.left + r.width/2))/10, dy = (y - (r.top + r.height/2))/10;
+            const dx = (x - (r.left + r.width/2))/10;
+            const dy = (y - (r.top + r.height/2))/10;
+            
+            // 物理形变逻辑
             dom.spirit.style.transform = `translate(${dx}px, ${dy}px) skew(${dx*0.4}deg) scale(${1-Math.abs(dy)/220}, ${1+Math.abs(dy)/220})`;
             dom.face.style.transform = `translate(${dx*0.7}px, ${dy*0.7}px)`;
         };
@@ -310,26 +317,17 @@
             }, 100);
         };
 
-        // 桌面端事件
+        // 注册事件 (兼容桌面和移动)
         dom.spirit.addEventListener('mousedown', (e) => startInteraction(e, e.clientX, e.clientY));
         window.addEventListener('mouseup', (e) => stopInteraction(e, e.clientX, e.clientY));
         window.addEventListener('mousemove', (e) => moveInteraction(e, e.clientX, e.clientY));
 
-        // 移动端事件（核心加固）
-        dom.spirit.addEventListener('touchstart', (e) => { 
-            const touch = e.touches[0];
-            startInteraction(e, touch.clientX, touch.clientY);
-        }, { passive: false });
-        window.addEventListener('touchend', (e) => {
-            const touch = e.changedTouches[0];
-            stopInteraction(e, touch.clientX, touch.clientY);
-        }, { passive: false });
-        window.addEventListener('touchmove', (e) => {
-            const touch = e.touches[0];
-            moveInteraction(e, touch.clientX, touch.clientY);
-        }, { passive: false });
+        dom.spirit.addEventListener('touchstart', (e) => startInteraction(e, e.touches[0].clientX, e.touches[0].clientY), {passive: false});
+        window.addEventListener('touchend', (e) => stopInteraction(e, e.changedTouches[0].clientX, e.changedTouches[0].clientY), {passive: false});
+        window.addEventListener('touchmove', (e) => moveInteraction(e, e.touches[0].clientX, e.touches[0].clientY), {passive: false});
+        window.addEventListener('touchcancel', () => { isPetting = false; dom.spirit.style.transform = ""; }); // 异常断开保护
 
-        // --- 其他功能逻辑 ---
+        // --- 其他逻辑 ---
         function switchMode(mode, el) {
             clearTimeout(breathTimer); currentMode = mode;
             dom.bWrap.className = 'breath-wrap'; dom.spirit.className = 'spirit'; dom.spirit.style.transform = ""; dom.face.style.transform = "";
@@ -343,19 +341,19 @@
             else if(mode === 'sleep') enterSleep();
         }
 
-        function enterSleep() { document.body.style.background = "#020617"; dom.bWrap.classList.add('is-sleeping-wrap'); dom.zzz.style.display = 'block'; dom.eyes.forEach(e => e.classList.add('sleeping')); showMessage("晚安。闭上眼休息吧..."); setTimeout(() => { if(currentMode === 'sleep') dom.bubble.style.opacity = 0; }, 4000); }
+        function enterSleep() { document.body.style.background = "#020617"; dom.bWrap.classList.add('is-sleeping-wrap'); dom.zzz.style.display = 'block'; dom.eyes.forEach(e => e.classList.add('sleeping')); showMessage("晚安。安心休息吧... 呼..."); setTimeout(() => { if(currentMode === 'sleep') dom.bubble.style.opacity = 0; }, 4000); }
         function runBreathCycle() { if(currentMode !== 'breath') return; const step = () => { if(currentMode !== 'breath') return; showMessage("慢慢吸气..."); dom.bWrap.className = 'breath-wrap breath-inhale'; breathTimer = setTimeout(() => { if(currentMode !== 'breath') return; showMessage("停住一会儿..."); dom.bWrap.className = 'breath-wrap breath-hold'; breathTimer = setTimeout(() => { if(currentMode !== 'breath') return; showMessage("缓缓呼气..."); dom.bWrap.className = 'breath-wrap breath-exhale'; breathTimer = setTimeout(step, 6000); }, 2000); }, 4000); }; step(); }
-        function startFocus() { toggleMenu('bag-menu'); currentMode = 'focus'; document.getElementById('main-dock').style.display='none'; document.getElementById('focus-timer').style.display='block'; document.getElementById('exit-focus').style.display='block'; dom.bWrap.classList.add('is-focusing-wrap'); dom.eyes.forEach(e => e.classList.add('focusing')); showMessage("加油，我会陪着你的。"); let time = 25*60; focusInt = setInterval(() => { time--; let m = Math.floor(time/60), s = time%60; document.getElementById('focus-timer').innerText = `${m}:${s < 10?'0'+s:s}`; if(time <= 0) stopFocus(true); }, 1000); }
-        function stopFocus(fin = false) { clearInterval(focusInt); document.getElementById('main-dock').style.display='flex'; document.getElementById('focus-timer').style.display='none'; document.getElementById('exit-focus').style.display='none'; currentMode = 'idle'; switchMode('idle', document.querySelector('.dock-item')); if(fin) { showMessage("太棒了！抱抱！"); createBurst(); } }
+        function startFocus() { toggleMenu('bag-menu'); currentMode = 'focus'; document.getElementById('main-dock').style.display='none'; document.getElementById('focus-timer').style.display='block'; document.getElementById('exit-focus').style.display='block'; dom.bWrap.classList.add('is-focusing-wrap'); dom.eyes.forEach(e => e.classList.add('focusing')); showMessage("我会乖乖陪着你的。加油哦！"); let time = 25*60; focusInt = setInterval(() => { time--; let m = Math.floor(time/60), s = time%60; document.getElementById('focus-timer').innerText = `${m}:${s < 10?'0'+s:s}`; if(time <= 0) stopFocus(true); }, 1000); }
+        function stopFocus(fin = false) { clearInterval(focusInt); document.getElementById('main-dock').style.display='flex'; document.getElementById('focus-timer').style.display='none'; document.getElementById('exit-focus').style.display='none'; currentMode = 'idle'; switchMode('idle', document.querySelector('.dock-item')); if(fin) { showMessage("25分钟到啦！真棒！"); createBurst(); } }
         function runEat(cb) { dom.spirit.classList.add('munching'); dom.eyes.forEach(e => e.classList.add('happy')); setTimeout(() => { dom.spirit.classList.remove('munching'); dom.mouth.classList.remove('open'); dom.spirit.classList.add('swallowing'); setTimeout(() => { dom.spirit.classList.remove('swallowing'); if(cb) cb(); setTimeout(() => dom.eyes.forEach(e => e.className = 'eye'), 1000); }, 600); }, 2000); }
         function giveGift(emoji, name) { toggleMenu('bag-menu'); showMessage(`${Memory.get('name')} 送了我${name}！`); dom.mouth.classList.add('open'); dom.eyes.forEach(e => e.classList.add('happy')); setTimeout(() => runEat(), 800); }
-        function startSwallowing() { const val = document.getElementById('vent-input').value.trim(); if(!val) return; document.getElementById('vent-input').value = ""; dom.mouth.classList.add('open'); dom.eyes.forEach(e => e.classList.add('happy')); showMessage("全吃掉！烦恼不见咯！"); setTimeout(() => runEat(() => { const s = Memory.addStar(); Memory.refresh(); showMessage(`存下了第 ${s} 颗守护星。`); createBurst(); }), 800); }
+        function startSwallowing() { const val = document.getElementById('vent-input').value.trim(); if(!val) return; document.getElementById('vent-input').value = ""; dom.mouth.classList.add('open'); dom.eyes.forEach(e => e.classList.add('happy')); showMessage("啊——呜！全吃掉！"); setTimeout(() => runEat(() => { const s = Memory.addStar(); Memory.refresh(); showMessage(`存下了第 ${s} 颗守护星。`); createBurst(); }), 800); }
         function giveNote() { toggleMenu('note-menu'); const ns = ["你已经很棒了。", "允许自己停下来。", "今天辛苦了。", "我会一直陪着你。", "记得喝口水呀。", "每个人都有自己的节奏。"]; showMessage(`(纸条)："${ns[Math.floor(Math.random()*ns.length)]}"`); }
         function toggleMenu(id) { const m = document.getElementById(id); const open = m.style.display==='flex'; document.querySelectorAll('.pop-menu').forEach(p=>p.style.display='none'); m.style.display=open?'none':'flex'; }
         function saveName() { const n = document.getElementById('name-input').value.trim(); if(n) { Memory.set('name', n); document.getElementById('onboarding').style.display='none'; welcomeUser(); } }
         function welcomeUser() { Memory.refresh(); showMessage(`${Memory.get('name')}，你回来啦。`); }
         function updateTimeTheme() { const h = new Date().getHours(); let b = "linear-gradient(180deg, #0f172a 0%, #1e293b 100%)"; if(h>=5 && h<9) b = "linear-gradient(180deg, #ff9a9e 0%, #fad0c4 100%)"; else if(h>=9 && h<17) b = "linear-gradient(180deg, #a1c4fd 0%, #c2e9fb 100%)"; else if(h>=17 && h<20) b = "linear-gradient(180deg, #f6d365 0%, #fda085 100%)"; document.body.style.background = b; }
-        function createStars() { const c = document.getElementById('stars-container'); for(let i=0; i<30; i++) { const s = document.createElement('div'); s.style.position='absolute'; s.style.left=Math.random()*100+'%'; s.style.top=Math.random()*100+'%'; s.style.width='2px'; s.style.height='2px'; s.style.background='white'; s.style.opacity=Math.random()*0.5; c.appendChild(s); } }
+        function createStars() { const c = document.getElementById('stars-container'); for(let i=0; i<40; i++) { const s = document.createElement('div'); s.style.position='absolute'; s.style.left=Math.random()*100+'%'; s.style.top=Math.random()*100+'%'; s.style.width='2px'; s.style.height='2px'; s.style.background='white'; s.style.opacity=Math.random()*0.5; c.appendChild(s); } }
         function createBurst() { for(let i=0; i<10; i++) { const p = document.createElement('div'); p.innerText="✨"; p.style.position="fixed"; p.style.left="50%"; p.style.top="60%"; p.style.transition="1.5s ease-out"; document.body.appendChild(p); const a=Math.random()*Math.PI*2; setTimeout(() => { p.style.transform=`translate(${Math.cos(a)*150}px, ${Math.sin(a)*150}px) scale(0)`; p.style.opacity=0; }, 50); setTimeout(()=>p.remove(), 1500); } }
 
         document.addEventListener('mousemove', (e) => {
