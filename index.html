@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>小白团子 Companion - 终极丝滑版</title>
+    <title>小白团子 Companion</title>
     <style>
         :root {
             --spirit-main: #ffffff;
@@ -12,21 +12,9 @@
             --bg-color: #0f172a;
         }
 
-        /* 核心：彻底锁定手机网页，不许晃动 */
-        html, body {
-            margin: 0; padding: 0;
-            width: 100vw; height: 100vh;
-            overflow: hidden; /* 严禁滚动 */
-            position: fixed; /* 强制定位，防止橡皮筋效果 */
-            overscroll-behavior: none; /* 禁用手机端下拉刷新和侧滑返回 */
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; outline: none; -webkit-tap-highlight-color: transparent; user-select: none; -webkit-touch-callout: none; }
 
-        * { 
-            box-sizing: border-box; outline: none; 
-            -webkit-tap-highlight-color: transparent;
-            user-select: none; 
-            -webkit-touch-callout: none; /* 禁用长按弹出菜单 */
-        }
+        html, body { margin: 0; padding: 0; width: 100vw; height: 100vh; overflow: hidden; position: fixed; overscroll-behavior: none; }
 
         body {
             background: var(--bg-color);
@@ -40,73 +28,27 @@
 
         #stars-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; }
 
-        /* ---------------- 顶部 UI ---------------- */
-        .top-ui {
-            position: absolute; top: 20px; width: 90%; 
-            display: flex; justify-content: space-between; align-items: center; z-index: 500;
-        }
-        .memory-badge {
-            font-size: 0.75rem; opacity: 0.8; background: rgba(255,255,255,0.1); 
-            padding: 8px 12px; border-radius: 12px; backdrop-filter: blur(5px);
-        }
-        .right-tools { 
-            display: flex !important; 
-            flex-direction: row !important; 
-            gap: 12px; 
-            align-items: center; 
-        }
+        /* ---------------- UI ---------------- */
+        .top-ui { position: absolute; top: 20px; width: 90%; display: flex; justify-content: space-between; align-items: center; z-index: 500; }
+        .memory-badge { font-size: 0.75rem; opacity: 0.8; background: rgba(255,255,255,0.1); padding: 8px 12px; border-radius: 12px; backdrop-filter: blur(5px); }
+        .right-tools { display: flex !important; flex-direction: row !important; gap: 12px; align-items: center; }
         .tool-container { position: relative; }
-        .tool-btn {
-            width: 45px; height: 45px; background: rgba(255,255,255,0.1);
-            border-radius: 50%; display: flex; align-items: center; justify-content: center;
-            cursor: pointer; font-size: 1.2rem; border: 1px solid rgba(255,255,255,0.2);
-        }
+        .tool-btn { width: 45px; height: 45px; background: rgba(255,255,255,0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 1.2rem; border: 1px solid rgba(255,255,255,0.2); }
 
-        .pop-menu {
-            position: absolute; top: 55px; right: 0; 
-            background: white; color: #1e293b;
-            padding: 12px; border-radius: 18px; display: none;
-            flex-direction: column; gap: 8px; min-width: 190px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.5); z-index: 1000;
-        }
-        .menu-item {
-            display: flex; align-items: center; gap: 10px; cursor: pointer;
-            padding: 12px; border-radius: 12px; transition: 0.2s; font-size: 0.95rem;
-            white-space: nowrap; text-decoration: none; color: #1e293b;
-        }
+        .pop-menu { position: absolute; top: 55px; right: 0; background: white; color: #1e293b; padding: 12px; border-radius: 18px; display: none; flex-direction: column; gap: 8px; min-width: 190px; box-shadow: 0 10px 40px rgba(0,0,0,0.5); z-index: 1000; }
+        .menu-item { display: flex; align-items: center; gap: 10px; cursor: pointer; padding: 12px; border-radius: 12px; transition: 0.2s; font-size: 0.95rem; white-space: nowrap; text-decoration: none; color: #1e293b; }
 
         /* ---------------- 舞台 ---------------- */
-        .main-stage {
-            position: relative; flex: 1; width: 100%;
-            display: flex; flex-direction: column; justify-content: center; align-items: center;
-            z-index: 10; padding-bottom: 80px;
-        }
+        .main-stage { position: relative; flex: 1; width: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 10; padding-bottom: 80px; }
+        .speech-bubble { background: rgba(255, 255, 255, 0.95); color: #1e293b; padding: 15px 25px; border-radius: 25px; font-size: 1rem; margin-bottom: 60px; min-height: 64px; max-width: 85%; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.3); position: relative; transition: 0.3s; line-height: 1.5; z-index: 20; }
+        .speech-bubble::after { content: ''; position: absolute; bottom: -10px; left: 50%; transform: translateX(-50%); border-left: 10px solid transparent; border-right: 10px solid transparent; border-top: 10px solid white; }
 
-        .speech-bubble {
-            background: rgba(255, 255, 255, 0.95);
-            color: #1e293b; padding: 15px 25px; border-radius: 25px;
-            font-size: 1rem; margin-bottom: 60px; min-height: 64px;
-            max-width: 85%; text-align: center;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
-            position: relative; transition: 0.3s; line-height: 1.5; z-index: 20;
-        }
-        .speech-bubble::after {
-            content: ''; position: absolute; bottom: -10px; left: 50%; transform: translateX(-50%);
-            border-left: 10px solid transparent; border-right: 10px solid transparent; border-top: 10px solid white;
-        }
+        #focus-timer { font-size: 2.8rem; font-weight: 200; margin-bottom: 20px; letter-spacing: 2px; display: none; }
 
-        /* ---------------- 团子结构 ---------------- */
+        /* ---------------- 团子分层结构 ---------------- */
         .tilt-box { position: relative; transition: transform 0.2s ease-out; perspective: 600px; z-index: 10; }
         .breath-wrap { transition: transform 0.6s ease-in-out; position: relative; }
         
-        .spirit {
-            width: 135px; height: 115px; background: var(--spirit-main); border-radius: 50% 50% 45% 45%;
-            position: relative; box-shadow: 0 0 35px rgba(255,255,255,0.2); cursor: pointer;
-            transform-origin: center bottom;
-            touch-action: none; /* 彻底禁用系统手势 */
-            transition: transform 0.1s linear, background 0.5s, box-shadow 0.5s;
-        }
-
         /* 动画类 */
         .breath-inhale { transition: transform 4s ease-in-out !important; transform: scale(1.6) !important; }
         .breath-hold { transition: transform 2s ease-in-out !important; transform: scale(1.6) !important; }
@@ -115,42 +57,56 @@
         @keyframes sleep-anim { 0%, 100% { transform: scale(0.95); opacity: 0.7; } 50% { transform: scale(1.02); opacity: 0.9; } }
         .is-sleeping-wrap { animation: sleep-anim 5s ease-in-out infinite !important; }
 
-        .munching { animation: munch 0.4s infinite !important; }
-        .swallowing { animation: swallow-gulp 0.6s ease-out forwards !important; }
-        @keyframes munch { 0%, 100% { transform: scale(1, 1); } 50% { transform: scale(1.18, 0.88); } }
-        @keyframes swallow-gulp { 0% { transform: scale(1.18, 0.88); } 50% { transform: scale(0.85, 1.25) translateY(-25px); } 100% { transform: scale(1, 1) translateY(0); } }
+        .spirit {
+            width: 135px; height: 115px; background: var(--spirit-main); border-radius: 50% 50% 45% 45%;
+            position: relative; box-shadow: 0 0 35px rgba(255,255,255,0.2); cursor: pointer;
+            transform-origin: center bottom; touch-action: none; transition: background 0.5s, box-shadow 0.5s;
+        }
 
-        /* 五官 */
-        .face { position: absolute; top: 45px; width: 100%; pointer-events: none; transition: 0.2s; }
+        /* 动态动画 */
+        @keyframes munch { 0%, 100% { transform: scale(1, 1); } 50% { transform: scale(1.18, 0.88); } }
+        @keyframes munch-fast { 0%, 100% { transform: scale(1, 1); } 50% { transform: scale(1.3, 0.75); } } /* 生气嚼 */
+        @keyframes swallow-gulp { 0% { transform: scale(1.18, 0.88); } 50% { transform: scale(0.85, 1.25) translateY(-25px); } 100% { transform: scale(1, 1) translateY(0); } }
+        @keyframes spirit-shake { 0%, 100% { transform: rotate(0); } 25% { transform: rotate(-10deg); } 75% { transform: rotate(10deg); } } /* 摇头 */
+
+        .munching { animation: munch 0.4s infinite !important; }
+        .munching-fast { animation: munch-fast 0.2s infinite !important; }
+        .swallowing { animation: swallow-gulp 0.6s ease-out forwards !important; }
+        .shaking { animation: spirit-shake 0.3s infinite !important; }
+
+        /* 五官与表情 */
+        .face { position: absolute; top: 45px; width: 100%; pointer-events: none; transition: 0.3s; }
         .eyes { display: flex; justify-content: center; gap: 35px; margin-bottom: 8px; }
-        .eye { width: 8px; height: 8px; background: #334155; border-radius: 50%; transition: 0.2s; position: relative; }
+        .eye { width: 8px; height: 8px; background: #334155; border-radius: 50%; transition: 0.5s; position: relative; }
+        
         .eye.petting { height: 3px; border-radius: 10px; transform: scaleX(1.2); }
         .eye.happy { background: transparent !important; width: 10px; height: 10px; border-top: 3px solid #334155; border-radius: 50% 50% 0 0; transform: translateY(2px) !important; }
         .eye.focusing { transform: scaleY(0.4) !important; border-radius: 2px; }
         .eye.sleeping { transform: scaleY(0.1) !important; height: 2px; width: 10px; border-radius: 0; opacity: 0.5; }
+        .eye.sad { transform: translateY(2px) rotate(15deg); height: 4px; border-radius: 10px; } /* 忧郁眼 */
+        .eye.angry { width: 10px; height: 3px; background: #334155; border-radius: 10px; transform: rotate(-20deg); } /* 气鼓鼓 */
 
-        .blush-container { position: absolute; top: 15px; width: 100%; display: flex; justify-content: center; gap: 55px; opacity: 0.35; transition: 0.5s; }
+        .blush-container { position: absolute; top: 12px; width: 100%; display: flex; justify-content: center; gap: 55px; opacity: 0.35; transition: 0.5s; }
         .blush { width: 18px; height: 10px; background: var(--blush-color); border-radius: 50%; filter: blur(2px); }
         .blush.shy { opacity: 1; transform: scale(1.4); background: #fca5a5; }
 
         .mouth {
             position: absolute; top: 32px; left: 50%; transform: translateX(-50%);
             width: 14px; height: 7px; border-bottom: 2.5px solid var(--mouth-color);
-            border-radius: 0 0 10px 10px; transition: all 0.3s;
+            border-radius: 0 0 10px 10px; transition: 0.3s;
         }
-        .mouth.open { top: 26px; width: 30px; height: 24px; background: #334155; border: none; border-radius: 40% 40% 50% 50%; box-shadow: inset 0 -8px 0 #fca5a5; }
+        .mouth.open { top: 22px; width: 28px; height: 28px; background: #334155; border: none; border-radius: 50%; box-shadow: inset 0 -6px 0 #fca5a5; }
 
-        .zzz { position: absolute; top: -20px; right: 0; font-size: 20px; opacity:0; display: none; animation: zzz-float 3s infinite; }
-        @keyframes zzz-float { 0% { transform: translate(0,0) scale(0.5); opacity:0; } 20% { opacity:1; } 100% { transform: translate(30px, -60px) scale(1.2); opacity:0; } }
-
-        /* UI 按钮 */
+        /* ---------------- 其他 UI ---------------- */
         .action-btn { background: white; color: #1e293b; border: none; padding: 10px 30px; border-radius: 20px; font-weight: bold; cursor: pointer; transition: 0.3s; }
         .dock { position: fixed; bottom: 30px; display: flex; gap: 15px; background: rgba(255,255,255,0.08); padding: 10px 20px; border-radius: 40px; backdrop-filter: blur(15px); border: 1px solid rgba(255,255,255,0.1); z-index: 100; }
         .dock-item { width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; border-radius: 50%; cursor: pointer; font-size: 1.3rem; transition: 0.3s; opacity: 0.6; }
         .dock-item.active { opacity: 1; background: rgba(255,255,255,0.2); }
-
         #onboarding { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #0f172a; z-index: 2000; display: none; flex-direction: column; justify-content: center; align-items: center; padding: 30px; text-align: center; }
         .input-box { width: 100%; max-width: 280px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 15px; color: white; padding: 12px; font-size: 1rem; text-align: center; margin-bottom: 15px; }
+
+        .gift-cloud, .trouble-cloud { position: fixed; padding: 8px 15px; border-radius: 20px; z-index: 2000; transition: all 1s cubic-bezier(0.6, -0.28, 0.735, 0.045); pointer-events: none; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
@@ -163,7 +119,7 @@
             <div class="tool-container">
                 <div class="tool-btn" onclick="toggleMenu('bag-menu')">🎒</div>
                 <div id="bag-menu" class="pop-menu">
-                    <a href="https://www.instagram.com/advicewithanson/" target="_blank" class="menu-item" style="color:#f43f5e; font-weight:bold;">✨ Anson 的小站</a>
+                    <a href="https://www.instagram.com/advicewithanson/" target="_blank" class="menu-item" style="color:#f43f5e; font-weight:bold;" onclick="teleportLog()">✨ Anson 的小站</a>
                     <div class="menu-item" onclick="giveGift('🍪', '小饼干')">🍪 投喂饼干</div>
                     <div class="menu-item" onclick="giveGift('🍵', '热茶')">🍵 倒杯热茶</div>
                     <div class="menu-item" onclick="startFocus()">📖 陪我专注</div>
@@ -181,11 +137,11 @@
     <div id="onboarding">
         <h2 style="margin-bottom: 30px; font-weight: 300;">你好呀，我是小白团子。<br>我该怎么称呼你呢？</h2>
         <input type="text" id="name-input" class="input-box" placeholder="你的名字..." maxlength="8">
-        <button class="action-btn" onclick="saveName()">开启陪伴</button>
+        <button class="action-btn" onclick="saveName()">我们要一直在一起哦</button>
     </div>
 
     <div class="main-stage">
-        <div id="focus-timer" style="font-size: 2.8rem; font-weight: 200; margin-bottom: 20px; display: none;">25:00</div>
+        <div id="focus-timer">25:00</div>
         <div class="speech-bubble" id="bubble">...</div>
 
         <div id="vent-area" style="display: none; flex-direction: column; align-items: center; margin-bottom: 40px; z-index: 100;">
@@ -194,15 +150,11 @@
         </div>
 
         <div class="tilt-box" id="tilt-box">
-            <div class="zzz" id="zzz">Zzz</div>
             <div class="breath-wrap" id="breath-wrap">
-                <div class="spirit" id="spirit">
+                <div class="spirit" id="spirit" onclick="handleSpiritClick()">
                     <div class="face" id="face">
                         <div class="eyes"><div class="eye"></div><div class="eye"></div></div>
-                        <div class="blush-container">
-                            <div class="blush"></div>
-                            <div class="blush"></div>
-                        </div>
+                        <div class="blush-container"><div class="blush"></div><div class="blush"></div></div>
                         <div class="mouth" id="mouth"></div>
                     </div>
                 </div>
@@ -240,13 +192,11 @@
             mouth: document.getElementById('mouth'),
             face: document.getElementById('face'),
             vent: document.getElementById('vent-area'),
-            zzz: document.getElementById('zzz'),
             eyes: document.querySelectorAll('.eye'),
             blushes: document.querySelectorAll('.blush')
         };
 
-        let currentMode = 'idle', breathTimer = null, focusInt = null;
-        let isPetting = false, petStartPos = {x:0, y:0};
+        let currentMode = 'idle', breathTimer = null, focusInt = null, isPetting = false, petStartPos = {x:0, y:0};
 
         window.onload = () => { Memory.init(); createStars(); updateTimeTheme(); if(!Memory.get('name')) document.getElementById('onboarding').style.display='flex'; else welcomeUser(); };
 
@@ -255,115 +205,112 @@
             setTimeout(() => { dom.bubble.innerText = txt; dom.bubble.style.opacity = 1; dom.bubble.style.transform = "translateY(0)"; }, 300);
         }
 
-        // --- 核心修复：手机端手势锁定与顺滑揉揉 ---
-        const startInteraction = (e, x, y) => {
-            if(e.cancelable) e.preventDefault(); // 阻止手机系统默认手势
-            
-            if(currentMode !== 'idle') {
-                if(currentMode === 'sleep') {
-                    dom.bubble.style.opacity = 1;
-                    showMessage(`唔... ${Memory.get('name')}... 做个好梦... ( ˘ω˘ )`);
-                    setTimeout(() => { if(currentMode === 'sleep') dom.bubble.style.opacity = 0; }, 3000);
-                }
-                return;
-            }
-            isPetting = true;
-            petStartPos = {x, y};
-            dom.eyes.forEach(e => e.classList.add('petting'));
-            dom.blushes.forEach(b => b.classList.add('shy'));
-            dom.spirit.style.transition = "none"; // 揉捏时去除延迟，实现丝滑跟随
-        };
+        // --- 核心进化：关键词感应逻辑 ---
+        function startSwallowing() {
+            const input = document.getElementById('vent-input');
+            const val = input.value.trim();
+            if(!val) return;
+            input.value = "";
 
-        const stopInteraction = (e, x, y) => {
-            if(!isPetting) return;
-            isPetting = false;
-            
-            const dist = Math.sqrt(Math.pow(x - petStartPos.x, 2) + Math.pow(y - petStartPos.y, 2));
-            
-            if(dist < 15) { // 点击判定
-                handlePoke();
-            } else {
-                showMessage(["揉揉揉~好舒服哦", "嘿嘿，暖洋洋的", "最喜欢主人的手心啦"][Math.floor(Math.random()*3)]);
-            }
-
-            dom.eyes.forEach(e => e.classList.remove('petting'));
-            dom.blushes.forEach(b => b.classList.remove('shy'));
-            dom.spirit.style.transition = "transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275)";
-            dom.spirit.style.transform = ""; dom.face.style.transform = "";
-        };
-
-        const moveInteraction = (e, x, y) => {
-            if(!isPetting) return;
-            if(e.cancelable) e.preventDefault(); // 关键：彻底阻止手机左右滑屏
-
-            const r = dom.spirit.getBoundingClientRect();
-            const dx = (x - (r.left + r.width/2))/10;
-            const dy = (y - (r.top + r.height/2))/10;
-            
-            // 物理形变逻辑
-            dom.spirit.style.transform = `translate(${dx}px, ${dy}px) skew(${dx*0.4}deg) scale(${1-Math.abs(dy)/220}, ${1+Math.abs(dy)/220})`;
-            dom.face.style.transform = `translate(${dx*0.7}px, ${dy*0.7}px)`;
-        };
-
-        const handlePoke = () => {
             const name = Memory.get('name');
-            dom.spirit.style.transition = "transform 0.1s ease-out";
-            dom.spirit.style.transform = "scale(0.85)";
+            let reactionType = "normal"; // normal, sad, doubt, angry, physical, love
+
+            // 关键词库
+            if (/累|哭|难过|压力|疼|碎/.test(val)) reactionType = "sad";
+            else if (/笨|差|没用|失败|丑|错/.test(val)) reactionType = "doubt";
+            else if (/加班|考试|老师|老板|领导|作业/.test(val)) reactionType = "angry";
+            else if (/饿|困|渴|睡/.test(val)) reactionType = "physical";
+            else if (/喜欢|爱|团子/.test(val)) reactionType = "love";
+
+            // 第一阶段：感应文字
+            dom.mouth.classList.add('open');
+            
+            if (reactionType === "sad") {
+                dom.eyes.forEach(e => e.classList.add('sad'));
+                showMessage(`(心疼地看着你) ${name}，累了就靠在我身上歇一歇吧...`);
+            } else if (reactionType === "doubt") {
+                dom.spirit.classList.add('shaking');
+                showMessage(`(用力摇头) 不许这样说！你是团子心中最棒的 ${name}！`);
+            } else if (reactionType === "angry") {
+                dom.eyes.forEach(e => { e.className = 'eye'; e.classList.add('angry'); });
+                showMessage(`(气鼓鼓) 这种坏东西，让团子大口吃掉消灭它！啊——`);
+            } else if (reactionType === "physical") {
+                showMessage(`(歪头想了想) 那团子陪你一起去补充能量好不好？`);
+            } else if (reactionType === "love") {
+                dom.spirit.style.background = "#ffd1dc";
+                dom.blushes.forEach(b => b.classList.add('shy'));
+                showMessage(`(脸红到冒烟) 嘿嘿... 团子也最喜欢 ${name} 啦！`);
+            } else {
+                dom.eyes.forEach(e => e.classList.add('happy'));
+                showMessage("啊——呜！全吃掉！烦恼不见咯！");
+            }
+
+            // 第二阶段：嚼嚼逻辑
             setTimeout(() => {
-                dom.spirit.style.transition = "transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)";
-                dom.spirit.style.transform = "scale(1.1) translateY(-15px)";
-                showMessage([`诶嘿！被 ${name} 戳到啦！`, "(๑•̀ㅂ•́)و✧ 团团在呢！", "痒痒的~"][Math.floor(Math.random()*3)]);
-                setTimeout(() => { if(!isPetting) dom.spirit.style.transform = ""; }, 400);
-            }, 100);
-        };
+                dom.mouth.classList.remove('open');
+                if (reactionType === "angry") dom.spirit.classList.add('munching-fast');
+                else dom.spirit.classList.add('munching');
 
-        // 注册事件 (兼容桌面和移动)
-        dom.spirit.addEventListener('mousedown', (e) => startInteraction(e, e.clientX, e.clientY));
-        window.addEventListener('mouseup', (e) => stopInteraction(e, e.clientX, e.clientY));
-        window.addEventListener('mousemove', (e) => moveInteraction(e, e.clientX, e.clientY));
+                setTimeout(() => {
+                    dom.spirit.classList.remove('munching', 'munching-fast', 'shaking');
+                    dom.spirit.classList.add('swallowing');
+                    
+                    setTimeout(() => {
+                        dom.spirit.classList.remove('swallowing');
+                        dom.spirit.style.background = "";
+                        const s = Memory.addStar(); Memory.refresh();
+                        
+                        if (reactionType === "doubt") showMessage(`看，烦恼被我吓跑啦！存下第 ${s} 颗星星。`);
+                        else if (reactionType === "love") showMessage(`嘿嘿，这颗爱心变成第 ${s} 颗守护星啦。`);
+                        else showMessage(`好啦，舒服多了。收集到了第 ${s} 颗守护星。`);
+                        
+                        createBurst();
+                        setTimeout(() => dom.eyes.forEach(e => e.className = 'eye'), 1000);
+                    }, 600);
+                }, 2000);
+            }, 1000);
+        }
 
-        dom.spirit.addEventListener('touchstart', (e) => startInteraction(e, e.touches[0].clientX, e.touches[0].clientY), {passive: false});
-        window.addEventListener('touchend', (e) => stopInteraction(e, e.changedTouches[0].clientX, e.changedTouches[0].clientY), {passive: false});
-        window.addEventListener('touchmove', (e) => moveInteraction(e, e.touches[0].clientX, e.touches[0].clientY), {passive: false});
-        window.addEventListener('touchcancel', () => { isPetting = false; dom.spirit.style.transform = ""; }); // 异常断开保护
-
-        // --- 其他逻辑 ---
+        // --- 其他原有功能逻辑 ---
         function switchMode(mode, el) {
             clearTimeout(breathTimer); currentMode = mode;
             dom.bWrap.className = 'breath-wrap'; dom.spirit.className = 'spirit'; dom.spirit.style.transform = ""; dom.face.style.transform = "";
-            dom.vent.style.display = 'none'; dom.zzz.style.display = 'none'; dom.bubble.style.opacity = 1;
+            dom.vent.style.display = 'none'; dom.bubble.style.opacity = 1;
             dom.eyes.forEach(e => e.className = 'eye'); dom.mouth.className = 'mouth';
             document.querySelectorAll('.dock-item').forEach(d => d.classList.remove('active')); el.classList.add('active');
             if(mode !== 'sleep') updateTimeTheme();
             if(mode === 'idle') welcomeUser();
             else if(mode === 'breath') runBreathCycle();
-            else if(mode === 'vent') { dom.vent.style.display = 'flex'; showMessage("我会努力吃掉你的烦恼！"); }
+            else if(mode === 'vent') { dom.vent.style.display = 'flex'; showMessage("把烦恼写在这里，我会努力吃掉它的！"); }
             else if(mode === 'sleep') enterSleep();
         }
 
-        function enterSleep() { document.body.style.background = "#020617"; dom.bWrap.classList.add('is-sleeping-wrap'); dom.zzz.style.display = 'block'; dom.eyes.forEach(e => e.classList.add('sleeping')); showMessage("晚安。安心休息吧... 呼..."); setTimeout(() => { if(currentMode === 'sleep') dom.bubble.style.opacity = 0; }, 4000); }
+        function enterSleep() { document.body.style.background = "#020617"; dom.bWrap.classList.add('is-sleeping-wrap'); dom.eyes.forEach(e => e.classList.add('sleeping')); showMessage("晚安。安心睡吧... 呼..."); setTimeout(() => { if(currentMode === 'sleep') dom.bubble.style.opacity = 0; }, 4000); }
+        function handleSpiritClick() { if(currentMode === 'sleep') { dom.bubble.style.opacity = 1; showMessage(`唔... ${Memory.get('name')}... 做个好梦... ( ˘ω˘ )`); setTimeout(() => { if(currentMode === 'sleep') dom.bubble.style.opacity = 0; }, 3000); } }
         function runBreathCycle() { if(currentMode !== 'breath') return; const step = () => { if(currentMode !== 'breath') return; showMessage("慢慢吸气..."); dom.bWrap.className = 'breath-wrap breath-inhale'; breathTimer = setTimeout(() => { if(currentMode !== 'breath') return; showMessage("停住一会儿..."); dom.bWrap.className = 'breath-wrap breath-hold'; breathTimer = setTimeout(() => { if(currentMode !== 'breath') return; showMessage("缓缓呼气..."); dom.bWrap.className = 'breath-wrap breath-exhale'; breathTimer = setTimeout(step, 6000); }, 2000); }, 4000); }; step(); }
         function startFocus() { toggleMenu('bag-menu'); currentMode = 'focus'; document.getElementById('main-dock').style.display='none'; document.getElementById('focus-timer').style.display='block'; document.getElementById('exit-focus').style.display='block'; dom.bWrap.classList.add('is-focusing-wrap'); dom.eyes.forEach(e => e.classList.add('focusing')); showMessage("我会乖乖陪着你的。加油哦！"); let time = 25*60; focusInt = setInterval(() => { time--; let m = Math.floor(time/60), s = time%60; document.getElementById('focus-timer').innerText = `${m}:${s < 10?'0'+s:s}`; if(time <= 0) stopFocus(true); }, 1000); }
-        function stopFocus(fin = false) { clearInterval(focusInt); document.getElementById('main-dock').style.display='flex'; document.getElementById('focus-timer').style.display='none'; document.getElementById('exit-focus').style.display='none'; currentMode = 'idle'; switchMode('idle', document.querySelector('.dock-item')); if(fin) { showMessage("25分钟到啦！真棒！"); createBurst(); } }
-        function runEat(cb) { dom.spirit.classList.add('munching'); dom.eyes.forEach(e => e.classList.add('happy')); setTimeout(() => { dom.spirit.classList.remove('munching'); dom.mouth.classList.remove('open'); dom.spirit.classList.add('swallowing'); setTimeout(() => { dom.spirit.classList.remove('swallowing'); if(cb) cb(); setTimeout(() => dom.eyes.forEach(e => e.className = 'eye'), 1000); }, 600); }, 2000); }
-        function giveGift(emoji, name) { toggleMenu('bag-menu'); showMessage(`${Memory.get('name')} 送了我${name}！`); dom.mouth.classList.add('open'); dom.eyes.forEach(e => e.classList.add('happy')); setTimeout(() => runEat(), 800); }
-        function startSwallowing() { const val = document.getElementById('vent-input').value.trim(); if(!val) return; document.getElementById('vent-input').value = ""; dom.mouth.classList.add('open'); dom.eyes.forEach(e => e.classList.add('happy')); showMessage("啊——呜！全吃掉！"); setTimeout(() => runEat(() => { const s = Memory.addStar(); Memory.refresh(); showMessage(`存下了第 ${s} 颗守护星。`); createBurst(); }), 800); }
-        function giveNote() { toggleMenu('note-menu'); const ns = ["你已经很棒了。", "允许自己停下来。", "今天辛苦了。", "我会一直陪着你。", "记得喝口水呀。", "每个人都有自己的节奏。"]; showMessage(`(纸条)："${ns[Math.floor(Math.random()*ns.length)]}"`); }
+        function stopFocus(fin = false) { clearInterval(focusInt); document.getElementById('main-dock').style.display='flex'; document.getElementById('focus-timer').style.display='none'; document.getElementById('exit-focus').style.display='none'; currentMode = 'idle'; switchMode('idle', document.querySelector('.dock-item')); if(fin) { showMessage("25分钟到啦！你真棒！"); createBurst(); } }
+        function giveGift(emoji, name) { toggleMenu('bag-menu'); showMessage(`${Memory.get('name')} 送了我${name}！`); dom.mouth.classList.add('open'); dom.eyes.forEach(e => e.classList.add('happy')); setTimeout(() => { dom.spirit.classList.add('munching'); setTimeout(() => { dom.spirit.classList.remove('munching'); dom.mouth.classList.remove('open'); setTimeout(() => dom.eyes.forEach(e => e.className = 'eye'), 1000); }, 2000); }, 1000); }
+        function giveNote() { toggleMenu('note-menu'); const ns = ["你已经很棒了。", "允许自己停下来。", "今天辛苦了。", "我会一直陪着你。", "记得喝口水呀。", "明天又是新的一页。"]; showMessage(`(递纸条)："${ns[Math.floor(Math.random()*ns.length)]}"`); }
         function toggleMenu(id) { const m = document.getElementById(id); const open = m.style.display==='flex'; document.querySelectorAll('.pop-menu').forEach(p=>p.style.display='none'); m.style.display=open?'none':'flex'; }
         function saveName() { const n = document.getElementById('name-input').value.trim(); if(n) { Memory.set('name', n); document.getElementById('onboarding').style.display='none'; welcomeUser(); } }
         function welcomeUser() { Memory.refresh(); showMessage(`${Memory.get('name')}，你回来啦。`); }
+        function teleportLog() { showMessage(`好哒！带 ${Memory.get('name')} 去找温暖建议咯...`); toggleMenu('bag-menu'); }
         function updateTimeTheme() { const h = new Date().getHours(); let b = "linear-gradient(180deg, #0f172a 0%, #1e293b 100%)"; if(h>=5 && h<9) b = "linear-gradient(180deg, #ff9a9e 0%, #fad0c4 100%)"; else if(h>=9 && h<17) b = "linear-gradient(180deg, #a1c4fd 0%, #c2e9fb 100%)"; else if(h>=17 && h<20) b = "linear-gradient(180deg, #f6d365 0%, #fda085 100%)"; document.body.style.background = b; }
-        function createStars() { const c = document.getElementById('stars-container'); for(let i=0; i<40; i++) { const s = document.createElement('div'); s.style.position='absolute'; s.style.left=Math.random()*100+'%'; s.style.top=Math.random()*100+'%'; s.style.width='2px'; s.style.height='2px'; s.style.background='white'; s.style.opacity=Math.random()*0.5; c.appendChild(s); } }
+        function createStars() { const c = document.getElementById('stars-container'); for(let i=0; i<30; i++) { const s = document.createElement('div'); s.style.position='absolute'; s.style.left=Math.random()*100+'%'; s.style.top=Math.random()*100+'%'; s.style.width='2px'; s.style.height='2px'; s.style.background='white'; s.style.opacity=Math.random()*0.5; c.appendChild(s); } }
         function createBurst() { for(let i=0; i<10; i++) { const p = document.createElement('div'); p.innerText="✨"; p.style.position="fixed"; p.style.left="50%"; p.style.top="60%"; p.style.transition="1.5s ease-out"; document.body.appendChild(p); const a=Math.random()*Math.PI*2; setTimeout(() => { p.style.transform=`translate(${Math.cos(a)*150}px, ${Math.sin(a)*150}px) scale(0)`; p.style.opacity=0; }, 50); setTimeout(()=>p.remove(), 1500); } }
 
-        document.addEventListener('mousemove', (e) => {
-            if(currentMode !== 'idle' || isPetting) return;
-            const r = dom.spirit.getBoundingClientRect(); const cx = r.left + r.width/2; const cy = r.top + r.height/2;
-            const a = Math.atan2(e.clientY-cy, e.clientX-cx);
-            dom.eyes.forEach(eye => { if(!eye.classList.contains('happy')) eye.style.transform=`translate(${Math.cos(a)*4}px, ${Math.sin(a)*4}px)`; });
-            const rx=-(e.clientY-cy)/window.innerHeight*15, ry=(e.clientX-cx)/window.innerWidth*15;
-            dom.tilt.style.transform=`rotateX(${rx}deg) rotateY(${ry}deg)`;
-        });
+        // --- 揉揉交互逻辑 ---
+        const startPet = (e, x, y) => { if(e.cancelable) e.preventDefault(); if(currentMode !== 'idle') return; isPetting = true; petStartPos = {x, y}; dom.eyes.forEach(e => e.classList.add('petting')); dom.blushes.forEach(b => b.classList.add('shy')); dom.spirit.style.transition = "none"; };
+        const stopPet = (e, x, y) => { if(!isPetting) return; isPetting = false; const dist = Math.sqrt(Math.pow(x - petStartPos.x, 2) + Math.pow(y - petStartPos.y, 2)); if(dist < 15) handlePoke(); dom.eyes.forEach(e => e.classList.remove('petting')); dom.blushes.forEach(b => b.classList.remove('shy')); dom.spirit.style.transition = "transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275)"; dom.spirit.style.transform = ""; dom.face.style.transform = ""; };
+        const handlePoke = () => { dom.spirit.style.transition = "transform 0.1s ease-out"; dom.spirit.style.transform = "scale(0.85)"; setTimeout(() => { dom.spirit.style.transition = "transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)"; dom.spirit.style.transform = "scale(1.1) translateY(-15px)"; setTimeout(() => { if(!isPetting) dom.spirit.style.transform = ""; }, 400); }, 100); };
+        const movePet = (e, x, y) => { if(!isPetting) return; if(e.cancelable) e.preventDefault(); const r = dom.spirit.getBoundingClientRect(); const dx = (x - (r.left + r.width/2))/10, dy = (y - (r.top + r.height/2))/10; dom.spirit.style.transform = `translate(${dx}px, ${dy}px) skew(${dx*0.4}deg) scale(${1-Math.abs(dy)/220}, ${1+Math.abs(dy)/220})`; dom.face.style.transform = `translate(${dx*0.7}px, ${dy*0.7}px)`; };
+        dom.spirit.addEventListener('mousedown', (e) => startPet(e, e.clientX, e.clientY));
+        window.addEventListener('mouseup', (e) => stopPet(e, e.clientX, e.clientY));
+        window.addEventListener('mousemove', (e) => movePet(e, e.clientX, e.clientY));
+        dom.spirit.addEventListener('touchstart', (e) => startPet(e, e.touches[0].clientX, e.touches[0].clientY), {passive: false});
+        window.addEventListener('touchend', (e) => stopPet(e, e.changedTouches[0].clientX, e.changedTouches[0].clientY), {passive: false});
+        window.addEventListener('touchmove', (e) => movePet(e, e.touches[0].clientX, e.touches[0].clientY), {passive: false});
     </script>
 </body>
 </html>
