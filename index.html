@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -10,6 +9,8 @@
 <body>
 
     <div id="stars-container"></div>
+    <!-- 记忆光球容器 -->
+    <div id="orb-container"></div>
     
     <div class="top-ui">
         <div class="memory-badge" id="badge-ui">...</div>
@@ -42,14 +43,24 @@
         <div id="focus-timer">25:00</div>
         <div class="speech-bubble" id="bubble">...</div>
 
+        <!-- 烦恼粉碎机 -->
         <div id="vent-area" style="display: none; flex-direction: column; align-items: center; margin-bottom: 40px; z-index: 100;">
             <input type="text" id="vent-input" class="input-box" placeholder="把烦恼写在这里..." autocomplete="off">
             <button class="action-btn" onclick="startSwallowing()">交给团子吃掉</button>
         </div>
 
+        <!-- 记忆日记区 -->
+        <div id="diary-area" style="display: none; flex-direction: column; align-items: center; margin-bottom: 40px; z-index: 100;">
+            <input type="text" id="diary-input" class="input-box" placeholder="记录下此时此刻..." autocomplete="off">
+            <div style="display: flex; gap: 10px;">
+                <button class="action-btn" onclick="addMemory('happy')" style="background: #fbbf24; color: #78350f;">记下美好 ✨</button>
+                <button class="action-btn" onclick="addMemory('sad')" style="background: #60a5fa; color: white;">记下忧伤 💧</button>
+            </div>
+        </div>
+
         <div class="tilt-box" id="tilt-box">
             <div class="breath-wrap" id="breath-wrap">
-                <div class="spirit" id="spirit" onclick="handleSpiritClick()">
+                <div class="spirit" id="spirit">
                     <div class="face" id="face">
                         <div class="eyes">
                             <div class="eye"></div>
@@ -72,6 +83,7 @@
         <div class="dock-item active" onclick="switchMode('idle', this)">🏠</div>
         <div class="dock-item" onclick="switchMode('breath', this)">🌬️</div>
         <div class="dock-item" onclick="switchMode('vent', this)">🕳️</div>
+        <div class="dock-item" onclick="switchMode('diary', this)">📖</div>
         <div class="dock-item" onclick="switchMode('sleep', this)">🌙</div>
     </div>
 

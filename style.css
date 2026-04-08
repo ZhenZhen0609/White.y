@@ -7,84 +7,61 @@
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; outline: none; -webkit-tap-highlight-color: transparent; user-select: none; }
-
 html, body { width: 100vw; height: 100vh; overflow: hidden; position: fixed; background: var(--bg-color); }
-
-body {
-    color: white; font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
-    display: flex; flex-direction: column; align-items: center;
-    transition: background 1.5s ease;
-}
+body { color: white; font-family: "PingFang SC", "Microsoft YaHei", sans-serif; display: flex; flex-direction: column; align-items: center; transition: background 1.5s ease; }
 
 #stars-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; }
+
+/* ---------------- 记忆光球样式 ---------------- */
+#orb-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 5; }
+.memory-orb {
+    position: absolute; width: 14px; height: 14px; border-radius: 50%;
+    filter: blur(0.5px); z-index: 6; cursor: pointer; pointer-events: auto;
+    animation: orb-pulse 2s infinite ease-in-out;
+}
+.orb-happy {
+    background: radial-gradient(circle, #fffbeb, #fbbf24);
+    box-shadow: 0 0 10px #fbbf24, 0 0 18px rgba(251, 191, 36, 0.4);
+}
+.orb-sad {
+    background: radial-gradient(circle, #eff6ff, #3b82f6);
+    box-shadow: 0 0 10px #3b82f6, 0 0 18px rgba(59, 130, 246, 0.4);
+}
+@keyframes orb-pulse {
+    0%, 100% { transform: scale(1); opacity: 0.8; }
+    50% { transform: scale(1.15); opacity: 1; }
+}
 
 /* ---------------- UI ---------------- */
 .top-ui { position: absolute; top: 20px; width: 90%; display: flex; justify-content: space-between; align-items: center; z-index: 500; }
 .memory-badge { font-size: 0.75rem; opacity: 0.8; background: rgba(255,255,255,0.1); padding: 8px 12px; border-radius: 12px; backdrop-filter: blur(5px); }
 .right-tools { display: flex; gap: 12px; }
-.tool-container { position: relative; }
 .tool-btn { width: 45px; height: 45px; background: rgba(255,255,255,0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; border: 1px solid rgba(255,255,255,0.2); }
 .pop-menu { position: absolute; top: 55px; right: 0; background: white; color: #1e293b; padding: 12px; border-radius: 18px; display: none; flex-direction: column; gap: 8px; min-width: 190px; box-shadow: 0 10px 40px rgba(0,0,0,0.5); z-index: 1000; }
 .menu-item { display: flex; align-items: center; gap: 10px; cursor: pointer; padding: 12px; border-radius: 12px; font-size: 0.95rem; text-decoration: none; color: #1e293b; }
 
-/* ---------------- Stage ---------------- */
+/* ---------------- Stage & Spirit ---------------- */
 .main-stage { position: relative; flex: 1; width: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 10; padding-bottom: 80px; }
 .speech-bubble { background: rgba(255, 255, 255, 0.95); color: #1e293b; padding: 15px 25px; border-radius: 25px; font-size: 1rem; margin-bottom: 60px; min-height: 64px; max-width: 85%; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.3); position: relative; transition: 0.3s; z-index: 20; }
 .speech-bubble::after { content: ''; position: absolute; bottom: -10px; left: 50%; transform: translateX(-50%); border-left: 10px solid transparent; border-right: 10px solid transparent; border-top: 10px solid white; }
 #focus-timer { font-size: 2.8rem; font-weight: 200; margin-bottom: 20px; display: none; }
 
-/* ---------------- Tuanzi Body ---------------- */
-.spirit {
-    width: 135px; height: 115px; background: var(--spirit-main); 
-    border-radius: 50% 50% 45% 45%; position: relative; 
-    box-shadow: 0 0 35px rgba(255,255,255,0.2); cursor: pointer;
-    transform-origin: center bottom; touch-action: none; 
-    /* 延长颜色过渡时间到 1.5s */
-    transition: background 1.5s ease, box-shadow 1.5s ease, transform 0.2s ease-out;
-}
-
-.spirit.is-blushing {
-    background: var(--spirit-blush) !important;
-    box-shadow: 0 0 45px rgba(251, 113, 133, 0.4);
-}
+.spirit { width: 135px; height: 115px; background: var(--spirit-main); border-radius: 50% 50% 45% 45%; position: relative; box-shadow: 0 0 35px rgba(255,255,255,0.2); cursor: pointer; transform-origin: center bottom; touch-action: none; transition: background 1.5s ease, box-shadow 1.5s ease, transform 0.2s ease-out; }
+.spirit.is-blushing { background: var(--spirit-blush) !important; box-shadow: 0 0 45px rgba(251, 113, 133, 0.4); }
 
 .breath-wrap { transition: transform 0.6s ease-in-out; position: relative; }
 .breath-inhale { transition: transform 4s ease-in-out !important; transform: scale(1.6) !important; }
 .breath-hold { transition: transform 2s ease-in-out !important; transform: scale(1.6) !important; }
 .breath-exhale { transition: transform 6s ease-in-out !important; transform: scale(1.0) !important; }
-
-@keyframes sleep-anim { 0%, 100% { transform: scale(0.95); opacity: 0.7; } 50% { transform: scale(1.02); opacity: 0.9; } }
 .is-sleeping-wrap { animation: sleep-anim 5s ease-in-out infinite !important; }
+@keyframes sleep-anim { 0%, 100% { transform: scale(0.95); opacity: 0.7; } 50% { transform: scale(1.02); opacity: 0.9; } }
 
-/* 拟人咀嚼：修复变方问题，保持圆润圆角 */
-@keyframes munch-puff {
-    0%, 100% { border-radius: 50% 50% 45% 45%; transform: scale(1); }
-    50% { 
-        border-radius: 52% 52% 48% 48%; /* 保持圆角比例，不产生直角感 */
-        transform: scale(1.08, 0.95); 
-    }
-}
-@keyframes mouth-chew {
-    0%, 100% { height: 2px; width: 10px; border-radius: 10px; background: var(--mouth-color); border: none; }
-    50% { height: 8px; width: 12px; border-radius: 50%; background: var(--mouth-color); border: none; }
-}
-
+@keyframes munch-puff { 0%, 100% { border-radius: 50% 50% 45% 45%; transform: scale(1); } 50% { border-radius: 52% 52% 48% 48%; transform: scale(1.08, 0.95); } }
 .munching { animation: munch-puff 0.5s infinite ease-in-out !important; }
-.munching .mouth { animation: mouth-chew 0.25s infinite ease-in-out !important; }
-
 .munching-fast { animation: munch-puff 0.2s infinite ease-in-out !important; }
-.munching-fast .mouth { animation: mouth-chew 0.1s infinite ease-in-out !important; }
-
-@keyframes swallow-gulp { 
-    0% { transform: scale(1.1, 0.9); } 
-    50% { transform: scale(0.8, 1.3) translateY(-30px); } 
-    100% { transform: scale(1, 1) translateY(0); } 
-}
+@keyframes swallow-gulp { 0% { transform: scale(1.1, 0.9); } 50% { transform: scale(0.8, 1.3) translateY(-30px); } 100% { transform: scale(1, 1) translateY(0); } }
 .swallowing { animation: swallow-gulp 0.6s ease-out forwards !important; }
-@keyframes spirit-shake { 0%, 100% { transform: rotate(0); } 25% { transform: rotate(-8deg); } 75% { transform: rotate(8deg); } }
-.shaking { animation: spirit-shake 0.3s infinite !important; }
 
-/* ---------------- Faces ---------------- */
 .face { position: absolute; top: 45px; width: 100%; pointer-events: none; transition: 0.3s; }
 .eyes { display: flex; justify-content: center; gap: 35px; margin-bottom: 8px; }
 .eye { width: 8px; height: 8px; background: #334155; border-radius: 50%; transition: 0.5s; position: relative; }
@@ -99,14 +76,9 @@ body {
 .blush { width: 18px; height: 10px; background: var(--blush-color); border-radius: 50%; filter: blur(2px); }
 .blush.shy { opacity: 1; transform: scale(1.4); background: #fca5a5; }
 
-.mouth {
-    position: absolute; top: 32px; left: 50%; transform: translateX(-50%);
-    width: 14px; height: 7px; border-bottom: 2.5px solid var(--mouth-color);
-    border-radius: 0 0 10px 10px; transition: 0.3s;
-}
+.mouth { position: absolute; top: 32px; left: 50%; transform: translateX(-50%); width: 14px; height: 7px; border-bottom: 2.5px solid var(--mouth-color); border-radius: 0 0 10px 10px; transition: 0.3s; }
 .mouth.open { top: 22px; width: 28px; height: 28px; background: #334155; border: none; border-radius: 50%; box-shadow: inset 0 -6px 0 #fca5a5; }
 
-/* ---------------- Interaction ---------------- */
 .action-btn { background: white; color: #1e293b; border: none; padding: 10px 30px; border-radius: 20px; font-weight: bold; cursor: pointer; transition: 0.3s; }
 .dock { position: fixed; bottom: 30px; display: flex; gap: 15px; background: rgba(255,255,255,0.08); padding: 10px 20px; border-radius: 40px; backdrop-filter: blur(15px); border: 1px solid rgba(255,255,255,0.1); z-index: 100; }
 .dock-item { width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; border-radius: 50%; cursor: pointer; font-size: 1.3rem; transition: 0.3s; opacity: 0.6; }
