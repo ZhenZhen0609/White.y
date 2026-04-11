@@ -9,21 +9,24 @@
 <body>
 
     <div id="stars-container"></div>
-    <!-- 记忆光球容器 -->
     <div id="orb-container"></div>
     
     <div class="top-ui">
+        <!-- 左侧徽章 -->
         <div class="memory-badge" id="badge-ui">...</div>
+        
+        <!-- 右侧工具栏：已改为横向容器 -->
         <div class="right-tools">
             <div class="tool-container">
                 <div class="tool-btn" onclick="toggleMenu('bag-menu')">🎒</div>
                 <div id="bag-menu" class="pop-menu">
-                    <a href="https://www.instagram.com/advicewithanson/" target="_blank" class="menu-item" style="color:#f43f5e; font-weight:bold;" onclick="teleportLog()">✨ Anson 的小站</a>
+                    <a href="https://www.instagram.com/advicewithanson/" target="_blank" class="menu-item" style="color:#f43f5e; font-weight:bold;">✨ Anson 的小站</a>
                     <div class="menu-item" onclick="giveGift('🍪', '小饼干')">🍪 投喂饼干</div>
                     <div class="menu-item" onclick="giveGift('🍵', '热茶')">🍵 倒杯热茶</div>
                     <div class="menu-item" onclick="startFocus()">📖 陪我专注</div>
                 </div>
             </div>
+            
             <div class="tool-container">
                 <div class="tool-btn" onclick="toggleMenu('note-menu')">✉️</div>
                 <div id="note-menu" class="pop-menu">
@@ -43,18 +46,12 @@
         <div id="focus-timer">25:00</div>
         <div class="speech-bubble" id="bubble">...</div>
 
-        <!-- 烦恼粉碎机 -->
-        <div id="vent-area" style="display: none; flex-direction: column; align-items: center; margin-bottom: 40px; z-index: 100;">
-            <input type="text" id="vent-input" class="input-box" placeholder="把烦恼写在这里..." autocomplete="off">
-            <button class="action-btn" onclick="startSwallowing()">交给团子吃掉</button>
-        </div>
-
-        <!-- 记忆日记区 -->
-        <div id="diary-area" style="display: none; flex-direction: column; align-items: center; margin-bottom: 40px; z-index: 100;">
-            <input type="text" id="diary-input" class="input-box" placeholder="记录下此时此刻..." autocomplete="off">
-            <div style="display: flex; gap: 10px;">
-                <button class="action-btn" onclick="addMemory('happy')" style="background: #fbbf24; color: #78350f;">记下美好 ✨</button>
-                <button class="action-btn" onclick="addMemory('sad')" style="background: #60a5fa; color: white;">记下忧伤 💧</button>
+        <div id="express-area" class="input-container">
+            <textarea id="express-input" class="input-box textarea" placeholder="想对团子说点什么吗？" rows="3"></textarea>
+            <div class="emotion-row">
+                <button class="emo-btn happy" onclick="handleExpress('happy')">✨ 记录美好</button>
+                <button class="emo-btn sad" onclick="handleExpress('sad')">💧 诉说忧伤</button>
+                <button class="emo-btn worry" onclick="handleExpress('worry')">🔥 消化烦恼</button>
             </div>
         </div>
 
@@ -70,20 +67,21 @@
                             <div class="blush"></div>
                             <div class="blush"></div>
                         </div>
-                        <div class="mouth" id="mouth"></div>
+                        <div class="mouth" id="mouth">
+                            <div class="tongue"></div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
+        
+        <button id="exit-focus" class="action-btn" style="margin-top: 30px; display: none;" onclick="stopFocus()">不学啦，抱抱我</button>
     </div>
-
-    <button id="exit-focus" class="action-btn" style="position: fixed; bottom: 100px; display: none; z-index: 1000;" onclick="stopFocus()">不学啦，抱抱我</button>
 
     <div class="dock" id="main-dock">
         <div class="dock-item active" onclick="switchMode('idle', this)">🏠</div>
+        <div class="dock-item" onclick="switchMode('express', this)">✉️</div>
         <div class="dock-item" onclick="switchMode('breath', this)">🌬️</div>
-        <div class="dock-item" onclick="switchMode('vent', this)">🕳️</div>
-        <div class="dock-item" onclick="switchMode('diary', this)">📖</div>
         <div class="dock-item" onclick="switchMode('sleep', this)">🌙</div>
     </div>
 
