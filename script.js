@@ -186,9 +186,17 @@ function createOrbElement(data, isStatic) {
     orb.className = `memory-orb orb-${data.type}`;
     
     let x, y;
-    if (isStatic && data.x !== undefined && data.y !== undefined) {
+    if (isStatic && data.x !== undefined) {
         x = data.x;
-        y = data.y;
+        // 兼容旧数据：优先使用 y，如果没有则使用 yOffset 转换
+        if (data.y !== undefined) {
+            y = data.y;
+        } else if (data.yOffset !== undefined) {
+            // 旧数据转换：yOffset 是从底部算的，转换为百分比
+            y = (window.innerHeight - 85 - data.yOffset) / window.innerHeight * 100;
+        } else {
+            y = Math.random() * 70 + 10;
+        }
     } else {
         x = Math.random() * 85 + 5;
         y = Math.random() * 70 + 10;
@@ -237,7 +245,15 @@ function createOrbElement(data, isStatic) {
     return orb;
 }
 
-function loadOldOrbs() { Memory.getOrbs().forEach(orb => createOrbElement(orb, true)); }
+function loadOldOrbs() { 
+    const orbs = Memory.getOrbs();
+    console.log('📂 加载旧光点，总数:', orbs.length);
+    console.log('📂 光点数据:', orbs);
+    orbs.forEach((orb, index) => {
+        console.log(`📂 光点 ${index}:`, orb.type, orb.text, '位置:', orb.x, orb.y);
+        createOrbElement(orb, true);
+    });
+}
 
 function switchMode(mode, el) {
     clearTimeout(breathTimer); clearInterval(focusInt);
