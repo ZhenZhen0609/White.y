@@ -115,27 +115,104 @@ function handleExpress(type) {
     const orbData = { 
         type, 
         text, 
-        x: Math.random() * 80 + 10, 
-        yOffset: Math.random() * 35 + 5, 
+        x: Math.random() * 85 + 5, 
+        y: Math.random() * 70 + 10, 
         time: new Date().toLocaleDateString(),
         image: currentImage
     };
     Memory.saveOrb(orbData); 
-    createOrbElement(orbData, false);
+    
+    const orb = createOrbElement(orbData, false);
+    animateOrbFromSpirit(orb, orbData.x, orbData.y);
+    
     Memory.addStar(); Memory.refresh();
     
     removeImage();
 }
 
+function animateOrbFromSpirit(orb, targetX, targetY) {
+    const spiritRect = dom.spirit.getBoundingClientRect();
+    const startX = spiritRect.left + spiritRect.width / 2;
+    const startY = spiritRect.top + spiritRect.height / 2;
+    
+    const targetPosX = (targetX / 100) * window.innerWidth;
+    const targetPosY = (targetY / 100) * window.innerHeight;
+    
+    const controlX = (startX + targetPosX) / 2 + (Math.random() - 0.5) * 100;
+    const controlY = Math.min(startY, targetPosY) - 100;
+    
+    orb.style.left = `${startX}px`;
+    orb.style.top = `${startY}px`;
+    orb.style.transform = 'scale(0)';
+    orb.style.opacity = '0';
+    orb.classList.remove('orb-spawning');
+    
+    let progress = 0;
+    const duration = 1200;
+    const startTime = Date.now();
+    
+    const animate = () => {
+        const elapsed = Date.now() - startTime;
+        progress = Math.min(elapsed / duration, 1);
+        
+        const t = progress;
+        const x = (1 - t) * (1 - t) * startX + 2 * (1 - t) * t * controlX + t * t * targetPosX;
+        const y = (1 - t) * (1 - t) * startY + 2 * (1 - t) * t * controlY + t * t * targetPosY;
+        
+        const scale = progress < 0.3 ? progress / 0.3 : 1;
+        const opacity = progress < 0.3 ? progress / 0.3 : 1;
+        
+        orb.style.left = `${x}px`;
+        orb.style.top = `${y}px`;
+        orb.style.transform = `scale(${scale})`;
+        orb.style.opacity = opacity;
+        
+        if (progress < 1) {
+            requestAnimationFrame(animate);
+        } else {
+            orb.style.left = `${targetX}%`;
+            orb.style.top = `${targetY}%`;
+            orb.style.transform = 'scale(1)';
+            orb.style.opacity = '1';
+            orb.classList.add('orb-drifting');
+        }
+    };
+    
+    requestAnimationFrame(animate);
+}
+
 function createOrbElement(data, isStatic) {
     const orb = document.createElement('div');
     orb.className = `memory-orb orb-${data.type}`;
-    orb.style.left = `${data.x}%`;
-    const targetY = window.innerHeight - 85 - data.yOffset;
-    if(isStatic) orb.style.top = `${targetY}px`;
-    else {
-        orb.style.top = `-20px`;
-        setTimeout(() => { orb.style.transition = "top 3s cubic-bezier(0.25, 0.46, 0.45, 0.94)"; orb.style.top = `${targetY}px`; }, 100);
+    
+    let x, y;
+    if (isStatic && data.x !== undefined && data.y !== undefined) {
+        x = data.x;
+        y = data.y;
+    } else {
+        x = Math.random() * 85 + 5;
+        y = Math.random() * 70 + 10;
+    }
+    
+    const driftRange = 15;
+    orb.style.setProperty('--drift-x1', `${(Math.random() - 0.5) * driftRange}px`);
+    orb.style.setProperty('--drift-y1', `${(Math.random() - 0.5) * driftRange}px`);
+    orb.style.setProperty('--drift-x2', `${(Math.random() - 0.5) * driftRange}px`);
+    orb.style.setProperty('--drift-y2', `${(Math.random() - 0.5) * driftRange}px`);
+    orb.style.setProperty('--drift-x3', `${(Math.random() - 0.5) * driftRange}px`);
+    orb.style.setProperty('--drift-y3', `${(Math.random() - 0.5) * driftRange}px`);
+    
+    orb.style.left = `${x}%`;
+    orb.style.top = `${y}%`;
+    
+    if (!isStatic) {
+        orb.classList.add('orb-spawning');
+        setTimeout(() => {
+            orb.classList.remove('orb-spawning');
+            orb.classList.add('orb-drifting');
+        }, 1500);
+    } else {
+        orb.classList.add('orb-drifting');
     }
     
     orb.dataset.orbData = JSON.stringify(data);
@@ -155,7 +232,9 @@ function createOrbElement(data, isStatic) {
     });
     
     dom.orbContainer.appendChild(orb);
-    console.log('💡 光点已创建:', data.type, '位置:', data.x + '%', targetY + 'px');
+    console.log('💡 光点已创建:', data.type, '位置:', x + '%', y + '%');
+    
+    return orb;
 }
 
 function loadOldOrbs() { Memory.getOrbs().forEach(orb => createOrbElement(orb, true)); }
