@@ -47,11 +47,15 @@
         <div class="speech-bubble" id="bubble">...</div>
 
         <div id="express-area" class="input-container">
-            <textarea id="express-input" class="input-box textarea" placeholder="想对团子说点什么吗？" rows="3"></textarea>
+            <textarea id="express-input" class="input-box textarea" placeholder="想对团子说点什么吗？" rows="5"></textarea>
+            <div class="image-preview" id="image-preview"></div>
             <div class="emotion-row">
                 <button class="emo-btn happy" onclick="handleExpress('happy')">✨ 记录美好</button>
-                <button class="emo-btn sad" onclick="handleExpress('sad')">💧 诉说忧伤</button>
-                <button class="emo-btn worry" onclick="handleExpress('worry')">🔥 消化烦恼</button>
+                <button class="emo-btn worry-blue" onclick="handleExpress('worry')">💧 消化烦恼</button>
+                <label class="image-upload-btn-small" id="image-upload-label">
+                    🖼️
+                    <input type="file" id="image-input" accept="image/*" style="display: none;">
+                </label>
             </div>
         </div>
 
@@ -83,6 +87,32 @@
         <div class="dock-item" onclick="switchMode('express', this)">✉️</div>
         <div class="dock-item" onclick="switchMode('breath', this)">🌬️</div>
         <div class="dock-item" onclick="switchMode('sleep', this)">🌙</div>
+    </div>
+
+    <div id="time-tunnel">
+        <div class="tunnel-background">
+            <div class="tunnel-bg-layer"></div>
+            <div class="tunnel-bg-layer"></div>
+            <div class="tunnel-bg-layer"></div>
+        </div>
+        
+        <div class="time-river">
+            <div class="time-line left"></div>
+            <div class="time-line right"></div>
+            
+            <div class="time-card" id="time-card">
+                <div class="time-card-header">
+                    <span class="time-card-emoji">✨</span>
+                    <span class="time-card-type">美好回忆</span>
+                    <span class="time-card-date">2024/1/1</span>
+                </div>
+                <div class="time-card-content">这里显示日志内容</div>
+                <div class="time-card-footer">在时间长河中，每一个瞬间都值得珍藏</div>
+                <button class="time-card-delete" onclick="deleteCurrentOrb()">🗑</button>
+            </div>
+        </div>
+        
+        <div class="time-hint">点击任意位置返回</div>
     </div>
 
     <script src="script.js"></script>

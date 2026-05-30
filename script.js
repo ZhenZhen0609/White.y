@@ -33,12 +33,50 @@ const dom = {
 };
 
 let currentMode = 'idle', breathTimer = null, focusInt = null, isPetting = false, petStartPos = {x:0, y:0};
+let currentImage = null;
 
 window.onload = () => { 
     Memory.init(); createStars(); updateTimeTheme(); loadOldOrbs(); 
+    TimeTunnel.init();
     if (!Memory.get('name')) document.getElementById('onboarding').style.display = 'flex'; 
     else welcomeUser(); 
+    
+    document.addEventListener('click', (e) => {
+        console.log('🎯 全局点击:', e.target, 'class:', e.target.className);
+    }, true);
+    
+    initImageUpload();
 };
+
+function initImageUpload() {
+    const imageInput = document.getElementById('image-input');
+    const imagePreview = document.getElementById('image-preview');
+    
+    imageInput.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            currentImage = event.target.result;
+            imagePreview.innerHTML = `
+                <img src="${currentImage}" alt="预览">
+                <div class="remove-image" onclick="removeImage()">×</div>
+            `;
+            imagePreview.classList.add('active');
+            imagePreview.style.position = 'relative';
+        };
+        reader.readAsDataURL(file);
+    });
+}
+
+function removeImage() {
+    currentImage = null;
+    const imagePreview = document.getElementById('image-preview');
+    imagePreview.innerHTML = '';
+    imagePreview.classList.remove('active');
+    document.getElementById('image-input').value = '';
+}
 
 function handleExpress(type) {
     const input = document.getElementById('express-input');
@@ -74,9 +112,19 @@ function handleExpress(type) {
         }, 800);
     }
 
-    const orbData = { type, text, x: Math.random() * 80 + 10, yOffset: Math.random() * 35 + 5, time: new Date().toLocaleDateString() };
-    Memory.saveOrb(orbData); createOrbElement(orbData, false);
+    const orbData = { 
+        type, 
+        text, 
+        x: Math.random() * 80 + 10, 
+        yOffset: Math.random() * 35 + 5, 
+        time: new Date().toLocaleDateString(),
+        image: currentImage
+    };
+    Memory.saveOrb(orbData); 
+    createOrbElement(orbData, false);
     Memory.addStar(); Memory.refresh();
+    
+    removeImage();
 }
 
 function createOrbElement(data, isStatic) {
@@ -89,11 +137,25 @@ function createOrbElement(data, isStatic) {
         orb.style.top = `-20px`;
         setTimeout(() => { orb.style.transition = "top 3s cubic-bezier(0.25, 0.46, 0.45, 0.94)"; orb.style.top = `${targetY}px`; }, 100);
     }
-    orb.onclick = () => {
-        const prefix = data.type === 'happy' ? '✨ 回忆起：' : '🌙 净化后的心情：';
-        showMessage(`${prefix}"${data.text}" (${data.time})`);
-    };
+    
+    orb.dataset.orbData = JSON.stringify(data);
+    
+    orb.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        console.log('✅ 光点被点击了!', data);
+        openTimeTunnel(data, orb);
+    });
+    
+    orb.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        console.log('✅ 触摸光点!', data);
+        openTimeTunnel(data, orb);
+    });
+    
     dom.orbContainer.appendChild(orb);
+    console.log('💡 光点已创建:', data.type, '位置:', data.x + '%', targetY + 'px');
 }
 
 function loadOldOrbs() { Memory.getOrbs().forEach(orb => createOrbElement(orb, true)); }
@@ -212,3 +274,213 @@ window.addEventListener('mousemove', (e) => movePet(e, e.clientX, e.clientY));
 dom.spirit.addEventListener('touchstart', (e) => startPet(e, e.touches[0].clientX, e.touches[0].clientY));
 window.addEventListener('touchend', (e) => stopPet(e, e.changedTouches[0].clientX, e.changedTouches[0].clientY));
 window.addEventListener('touchmove', (e) => movePet(e, e.touches[0].clientX, e.touches[0].clientY));
+
+// ==================== 时间穿梭系统 ====================
+
+const TimeTunnel = {
+    el: null,
+    card: null,
+    orbData: null,
+    originOrb: null,
+    currentOrbIndex: -1,
+    
+    init() {
+        this.el = document.getElementById('time-tunnel');
+        this.card = document.getElementById('time-card');
+        
+        this.el.addEventListener('click', (e) => {
+            if (e.target === this.el || e.target.classList.contains('tunnel-background') || 
+                e.target.classList.contains('tunnel-bg-layer') || e.target.classList.contains('time-river') ||
+                e.target.classList.contains('time-line')) {
+                this.close();
+            }
+        });
+    },
+    
+    open(data, orbElement) {
+        this.orbData = data;
+        this.originOrb = orbElement;
+        
+        const orbs = Memory.getOrbs();
+        this.currentOrbIndex = orbs.findIndex(o => 
+            o.time === data.time && o.text === data.text && o.type === data.type
+        );
+        
+        const rect = orbElement.getBoundingClientRect();
+        const originOrb = document.createElement('div');
+        originOrb.className = `orb-origin ${data.type}`;
+        originOrb.style.width = '16px';
+        originOrb.style.height = '16px';
+        originOrb.style.left = `${rect.left}px`;
+        originOrb.style.top = `${rect.top}px`;
+        document.body.appendChild(originOrb);
+        
+        requestAnimationFrame(() => {
+            originOrb.style.width = '300px';
+            originOrb.style.height = '300px';
+            originOrb.style.left = `${window.innerWidth / 2 - 150}px`;
+            originOrb.style.top = `${window.innerHeight / 2 - 150}px`;
+            originOrb.style.opacity = '0';
+        });
+        
+        setTimeout(() => {
+            originOrb.remove();
+            this.el.classList.add('active');
+            this.updateCard(data);
+            
+            setTimeout(() => {
+                this.card.classList.add('visible');
+            }, 100);
+        }, 500);
+    },
+    
+    updateCard(data) {
+        console.log('📋 updateCard 被调用，data:', data);
+        
+        const emoji = data.type === 'happy' ? '✨' : '💧';
+        const typeText = data.type === 'happy' ? '美好回忆' : '消化烦恼';
+        
+        this.card.querySelector('.time-card-emoji').textContent = emoji;
+        this.card.querySelector('.time-card-type').textContent = typeText;
+        
+        const dateEl = this.card.querySelector('.time-card-date');
+        console.log('📅 dateEl 元素:', dateEl);
+        console.log('📅 data.time 值:', data.time);
+        const displayDate = data.time || '某一天';
+        dateEl.textContent = displayDate;
+        console.log('📅 设置后的 textContent:', dateEl.textContent);
+        
+        this.card.querySelector('.time-card-content').textContent = data.text;
+        
+        this.card.classList.remove('happy-card', 'worry-card');
+        const existingRain = this.card.querySelector('.rain-drops');
+        if (existingRain) existingRain.remove();
+        const existingGlow = this.card.querySelectorAll('.glow-layer-1, .glow-layer-2');
+        existingGlow.forEach(g => g.remove());
+        
+        if (this.glowAnimation) {
+            cancelAnimationFrame(this.glowAnimation);
+            this.glowAnimation = null;
+        }
+        
+        if (data.image) {
+            this.card.style.backgroundImage = `url(${data.image})`;
+            this.card.classList.add('with-image');
+        } else {
+            this.card.style.backgroundImage = '';
+            this.card.classList.remove('with-image');
+            
+            if (data.type === 'happy') {
+                this.card.classList.add('happy-card');
+                this.createFlowingGlow();
+            } else {
+                this.card.classList.add('worry-card');
+                this.createRainEffect();
+            }
+        }
+        
+        const footer = this.card.querySelector('.time-card-footer');
+        if (data.type === 'happy') {
+            footer.textContent = '这份美好，永远闪耀在时间长河中';
+        } else {
+            footer.textContent = '烦恼已被团子吃掉，化作前进的动力';
+        }
+    },
+    
+    createFlowingGlow() {
+        const glow1 = document.createElement('div');
+        glow1.className = 'glow-layer-1';
+        
+        const glow2 = document.createElement('div');
+        glow2.className = 'glow-layer-2';
+        
+        this.card.appendChild(glow1);
+        this.card.appendChild(glow2);
+        
+        let time = 0;
+        const animate = () => {
+            time += 0.008;
+            
+            const x1 = 50 + Math.sin(time * 1.3) * 25 + Math.cos(time * 0.7) * 15;
+            const y1 = 50 + Math.cos(time * 1.1) * 25 + Math.sin(time * 0.9) * 15;
+            
+            const x2 = 50 + Math.cos(time * 1.5) * 30 + Math.sin(time * 0.8) * 20;
+            const y2 = 50 + Math.sin(time * 1.2) * 30 + Math.cos(time * 0.6) * 20;
+            
+            glow1.style.background = `radial-gradient(circle at ${x1}% ${y1}%, rgba(255, 255, 255, 0.9) 0%, transparent 35%)`;
+            glow2.style.background = `radial-gradient(circle at ${x2}% ${y2}%, rgba(251, 191, 36, 0.4) 0%, transparent 40%)`;
+            
+            this.glowAnimation = requestAnimationFrame(animate);
+        };
+        
+        animate();
+    },
+    
+    createRainEffect() {
+        const rainContainer = document.createElement('div');
+        rainContainer.className = 'rain-drops';
+        
+        for (let i = 0; i < 15; i++) {
+            const drop = document.createElement('div');
+            drop.className = 'rain-drop';
+            
+            const width = 1 + Math.random() * 2.5;
+            const height = 15 + Math.random() * 50;
+            const duration = 1.5 + Math.random() * 4;
+            const delay = Math.random() * 3;
+            
+            drop.style.left = `${Math.random() * 100}%`;
+            drop.style.width = `${width}px`;
+            drop.style.height = `${height}px`;
+            drop.style.animationDuration = `${duration}s`;
+            drop.style.animationDelay = `${delay}s`;
+            
+            rainContainer.appendChild(drop);
+        }
+        
+        this.card.appendChild(rainContainer);
+    },
+    
+    close() {
+        this.card.classList.remove('visible');
+        this.card.classList.remove('with-image');
+        
+        setTimeout(() => {
+            this.el.classList.remove('active');
+        }, 300);
+    },
+    
+    delete() {
+        if (this.currentOrbIndex === -1) return;
+        
+        let orbs = Memory.getOrbs();
+        orbs.splice(this.currentOrbIndex, 1);
+        localStorage.setItem('spirit_orbs', JSON.stringify(orbs));
+        
+        if (this.originOrb) {
+            this.originOrb.style.transition = 'all 0.3s ease-out';
+            this.originOrb.style.transform = 'scale(0)';
+            this.originOrb.style.opacity = '0';
+            setTimeout(() => {
+                this.originOrb.remove();
+            }, 300);
+        }
+        
+        this.close();
+        
+        showMessage('这条记录已从时间长河中消散...');
+    }
+};
+
+function deleteCurrentOrb() {
+    TimeTunnel.delete();
+}
+
+function openTimeTunnel(data, orbElement) {
+    console.log('openTimeTunnel 被调用', data, orbElement);
+    if (!TimeTunnel.el) {
+        console.log('TimeTunnel 未初始化，现在初始化');
+        TimeTunnel.init();
+    }
+    TimeTunnel.open(data, orbElement);
+}

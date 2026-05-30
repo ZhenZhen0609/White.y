@@ -41,17 +41,17 @@ body {
     width: 100%; 
     height: 100%; 
     pointer-events: none; 
-    z-index: 1; 
+    z-index: 3000;
 }
 
 /* 允许光球本身被点击 */
 .memory-orb { 
-    pointer-events: auto; 
+    pointer-events: auto !important;
     position: absolute; 
-    width: 16px; 
-    height: 16px; 
+    width: 30px;
+    height: 30px;
     border-radius: 50%; 
-    z-index: 10; 
+    z-index: 2000 !important;
     animation: orb-pulse 2s infinite ease-in-out; 
     cursor: pointer;
 }
@@ -223,8 +223,105 @@ body {
     transition: 0.2s; 
 }
 .emo-btn.happy { background: #fbbf24; color: #78350f; }
+.emo-btn.worry-blue { background: #60a5fa; color: white; }
 .emo-btn.sad { background: #60a5fa; color: white; }
 .emo-btn.worry { background: #f87171; color: white; }
+
+.image-upload-btn-small {
+    width: 50px;
+    height: 38px;
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 1.1rem;
+    transition: all 0.3s;
+}
+
+.image-upload-btn-small:hover {
+    background: rgba(255, 255, 255, 0.25);
+}
+
+/* 图片上传相关 */
+.image-preview {
+    width: 100%;
+    margin-bottom: 10px;
+    display: none;
+}
+
+.image-preview.active {
+    display: block;
+}
+
+.image-preview img {
+    width: 100%;
+    max-height: 150px;
+    object-fit: cover;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.image-preview .remove-image {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    width: 24px;
+    height: 24px;
+    background: rgba(0, 0, 0, 0.6);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: white;
+    font-size: 14px;
+}
+
+.express-tools {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 100%;
+}
+
+.image-upload-btn {
+    padding: 8px 16px;
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 10px;
+    color: white;
+    font-size: 0.85rem;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.3s;
+}
+
+.image-upload-btn:hover {
+    background: rgba(255, 255, 255, 0.25);
+}
+
+.time-card.with-image {
+    background-size: cover;
+    background-position: center;
+    position: relative;
+}
+
+.time-card.with-image::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(255, 255, 255, 0.75);
+    border-radius: 24px;
+    z-index: 0;
+}
+
+.time-card.with-image > * {
+    position: relative;
+    z-index: 1;
+}
 
 /* --- 团子核心样式 --- */
 .spirit { 
@@ -384,9 +481,8 @@ body {
     box-shadow: 0 0 10px #60a5fa, 0 0 20px rgba(96, 165, 250, 0.3); 
 }
 .orb-worry { 
-    background: radial-gradient(circle, #fff, #f87171); 
-    box-shadow: 0 0 10px #f87171; 
-    opacity: 0.8; 
+    background: radial-gradient(circle, #fff, #60a5fa); 
+    box-shadow: 0 0 10px #60a5fa, 0 0 20px rgba(96, 165, 250, 0.3); 
 }
 @keyframes orb-pulse { 
     0%, 100% { transform: scale(1); opacity: 0.8; } 
@@ -472,3 +568,329 @@ body {
     transition: 0.3s;
 }
 .action-btn:active { transform: scale(0.95); }
+
+/* --- 时间穿梭系统 --- */
+#time-tunnel {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    display: none;
+    align-items: center;
+    justify-content: center;
+}
+
+#time-tunnel.active {
+    display: flex;
+}
+
+.tunnel-background {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+}
+
+.tunnel-bg-layer {
+    position: absolute;
+    width: 200%;
+    height: 200%;
+    top: -50%;
+    left: -50%;
+    background: radial-gradient(ellipse at 50% 50%, 
+        rgba(251, 191, 36, 0.15) 0%, 
+        rgba(96, 165, 250, 0.12) 25%, 
+        rgba(248, 113, 133, 0.1) 50%, 
+        rgba(167, 139, 250, 0.12) 75%, 
+        rgba(251, 191, 36, 0.15) 100%);
+    animation: tunnel-flow 20s linear infinite;
+}
+
+.tunnel-bg-layer:nth-child(2) {
+    animation: tunnel-flow 25s linear infinite reverse;
+    opacity: 0.7;
+}
+
+.tunnel-bg-layer:nth-child(3) {
+    animation: tunnel-flow 30s linear infinite;
+    opacity: 0.5;
+    background: radial-gradient(ellipse at 30% 70%, 
+        rgba(248, 113, 133, 0.15) 0%, 
+        rgba(167, 139, 250, 0.12) 50%, 
+        rgba(96, 165, 250, 0.1) 100%);
+}
+
+@keyframes tunnel-flow {
+    0% { transform: rotate(0deg) scale(1); }
+    50% { transform: rotate(180deg) scale(1.2); }
+    100% { transform: rotate(360deg) scale(1); }
+}
+
+.time-river {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+}
+
+.time-line {
+    position: absolute;
+    width: 2px;
+    background: linear-gradient(180deg, 
+        transparent 0%, 
+        rgba(200, 200, 210, 0.15) 20%, 
+        rgba(200, 200, 210, 0.2) 50%, 
+        rgba(200, 200, 210, 0.15) 80%, 
+        transparent 100%);
+    height: 100vh;
+}
+
+.time-line.left { left: calc(50% - 200px); }
+.time-line.right { right: calc(50% - 200px); }
+
+.time-line::before,
+.time-line::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: rgba(200, 200, 210, 0.3);
+}
+
+.time-line::before { top: 20%; }
+.time-line::after { bottom: 20%; }
+
+.time-card {
+    position: relative;
+    max-width: 420px;
+    width: 90%;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    border-radius: 24px;
+    padding: 32px;
+    box-shadow: 
+        0 20px 60px rgba(0, 0, 0, 0.3),
+        0 0 80px rgba(251, 191, 36, 0.2);
+    transform: scale(0);
+    opacity: 0;
+    transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+    overflow: hidden;
+}
+
+.time-card.visible {
+    transform: scale(1);
+    opacity: 1;
+}
+
+.time-card.happy-card {
+    background: linear-gradient(135deg, 
+        rgba(255, 250, 240, 0.95) 0%, 
+        rgba(254, 243, 199, 0.95) 50%, 
+        rgba(251, 232, 168, 0.95) 100%);
+    box-shadow: 
+        0 20px 60px rgba(251, 191, 36, 0.3),
+        0 0 100px rgba(251, 191, 36, 0.4),
+        inset 0 0 60px rgba(255, 255, 255, 0.5);
+}
+
+.time-card.happy-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 24px;
+    z-index: 0;
+    opacity: 0.85;
+    animation: happy-glow 3s ease-in-out infinite;
+}
+
+.time-card.happy-card .glow-layer-1,
+.time-card.happy-card .glow-layer-2 {
+    position: absolute;
+    inset: 0;
+    border-radius: 24px;
+    z-index: 0;
+    pointer-events: none;
+}
+
+.time-card.happy-card .glow-layer-1 {
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.9) 0%, transparent 35%);
+}
+
+.time-card.happy-card .glow-layer-2 {
+    background: radial-gradient(circle, rgba(251, 191, 36, 0.4) 0%, transparent 40%);
+}
+
+@keyframes happy-glow {
+    0%, 100% { opacity: 0.7; }
+    50% { opacity: 1; }
+}
+
+.time-card.worry-card {
+    background: linear-gradient(135deg, 
+        rgba(240, 248, 255, 0.85) 0%, 
+        rgba(219, 234, 254, 0.85) 50%, 
+        rgba(191, 219, 254, 0.85) 100%);
+    backdrop-filter: blur(30px);
+    box-shadow: 
+        0 20px 60px rgba(96, 165, 250, 0.25),
+        0 0 80px rgba(96, 165, 250, 0.2),
+        inset 0 0 40px rgba(255, 255, 255, 0.3);
+}
+
+.time-card.worry-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 24px;
+    z-index: 0;
+    background: transparent;
+}
+
+.time-card.worry-card .rain-drops {
+    position: absolute;
+    inset: 0;
+    border-radius: 24px;
+    overflow: hidden;
+    z-index: 0;
+    pointer-events: none;
+}
+
+.rain-drop {
+    position: absolute;
+    width: 2px;
+    background: linear-gradient(180deg, 
+        transparent 0%, 
+        rgba(96, 165, 250, 0.3) 20%, 
+        rgba(96, 165, 250, 0.15) 60%, 
+        transparent 100%);
+    border-radius: 50%;
+    animation: rain-fall linear infinite;
+    opacity: 0;
+}
+
+@keyframes rain-fall {
+    0% {
+        transform: translateY(-100%);
+        opacity: 0;
+    }
+    10% {
+        opacity: 0.6;
+    }
+    90% {
+        opacity: 0.6;
+    }
+    100% {
+        transform: translateY(500%);
+        opacity: 0;
+    }
+}
+
+.time-card-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.time-card-emoji {
+    font-size: 2.5rem;
+}
+
+.time-card-type {
+    font-size: 0.85rem;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.time-card-date {
+    margin-left: auto;
+    font-size: 0.8rem;
+    color: #64748b;
+    background: rgba(255, 255, 255, 0.5);
+    padding: 6px 12px;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.time-card-content {
+    color: #1e293b;
+    font-size: 1.1rem;
+    line-height: 1.8;
+    text-align: center;
+    padding: 20px 0;
+    border-top: 1px solid #e2e8f0;
+    border-bottom: 1px solid #e2e8f0;
+    margin-bottom: 20px;
+}
+
+.time-card-footer {
+    text-align: center;
+    font-size: 0.85rem;
+    color: #94a3b8;
+}
+
+.time-card-delete {
+    position: absolute;
+    bottom: 8px;
+    right: 8px;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    background: rgba(239, 68, 68, 0.05);
+    border: none;
+    border-radius: 6px;
+    color: rgba(239, 68, 68, 0.3);
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.time-card-delete:hover {
+    background: rgba(239, 68, 68, 0.15);
+    color: rgba(239, 68, 68, 0.6);
+}
+
+.time-hint {
+    position: absolute;
+    bottom: 40px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 0.85rem;
+    animation: hint-pulse 2s ease-in-out infinite;
+}
+
+@keyframes hint-pulse {
+    0%, 100% { opacity: 0.6; }
+    50% { opacity: 1; }
+}
+
+.orb-origin {
+    position: fixed;
+    pointer-events: none;
+    z-index: 10000;
+    border-radius: 50%;
+    transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.orb-origin.happy {
+    background: radial-gradient(circle, #fff, #fbbf24);
+    box-shadow: 0 0 20px #fbbf24, 0 0 40px rgba(251, 191, 36, 0.5);
+}
+
+.orb-origin.sad {
+    background: radial-gradient(circle, #fff, #60a5fa);
+    box-shadow: 0 0 20px #60a5fa, 0 0 40px rgba(96, 165, 250, 0.5);
+}
+
+.orb-origin.worry {
+    background: radial-gradient(circle, #fff, #f87171);
+    box-shadow: 0 0 20px #f87171, 0 0 40px rgba(248, 113, 133, 0.5);
+}
