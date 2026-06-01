@@ -24,6 +24,7 @@
                     <div class="menu-item" onclick="giveGift('🍪', '小饼干')">🍪 投喂饼干</div>
                     <div class="menu-item" onclick="giveGift('🍵', '热茶')">🍵 倒杯热茶</div>
                     <div class="menu-item" onclick="startFocus()">📖 陪我专注</div>
+                    <div class="menu-item" onclick="exportDiary()">📥 导出日记</div>
                 </div>
             </div>
             
@@ -33,6 +34,30 @@
                     <div class="menu-item" onclick="giveNote()">✉️ 抽张纸条</div>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <!-- 登录/注册界面 -->
+    <div id="auth-screen" style="display: none; position: fixed; inset: 0; background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%); z-index: 5000; flex-direction: column; justify-content: center; align-items: center;">
+        <div style="text-align: center; margin-bottom: 40px;">
+            <h2 style="color: white; font-weight: 300; margin-bottom: 10px;">小白团子</h2>
+            <p style="color: #94a3b8; font-size: 0.9rem;">登录保存你的情绪日记</p>
+        </div>
+        
+        <div id="login-form" style="display: flex; flex-direction: column; gap: 15px; width: 280px;">
+            <input type="text" id="login-username" placeholder="用户名" style="padding: 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.1); color: white; outline: none;">
+            <input type="password" id="login-password" placeholder="密码" style="padding: 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.1); color: white; outline: none;">
+            <button onclick="handleLogin()" style="padding: 12px; border-radius: 12px; background: white; color: #0f172a; border: none; font-weight: bold; cursor: pointer;">登录</button>
+            <button onclick="showRegister()" style="padding: 12px; border-radius: 12px; background: transparent; color: white; border: 1px solid rgba(255,255,255,0.3); cursor: pointer;">注册新账号</button>
+            <button onclick="skipLogin()" style="padding: 8px; background: transparent; color: #64748b; border: none; cursor: pointer; font-size: 0.85rem;">跳过，离线使用</button>
+        </div>
+        
+        <div id="register-form" style="display: none; flex-direction: column; gap: 15px; width: 280px;">
+            <input type="text" id="register-username" placeholder="用户名" style="padding: 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.1); color: white; outline: none;">
+            <input type="password" id="register-password" placeholder="密码" style="padding: 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.1); color: white; outline: none;">
+            <input type="text" id="register-nickname" placeholder="昵称（可选）" style="padding: 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.1); color: white; outline: none;">
+            <button onclick="handleRegister()" style="padding: 12px; border-radius: 12px; background: white; color: #0f172a; border: none; font-weight: bold; cursor: pointer;">注册</button>
+            <button onclick="showLogin()" style="padding: 12px; border-radius: 12px; background: transparent; color: white; border: 1px solid rgba(255,255,255,0.3); cursor: pointer;">返回登录</button>
         </div>
     </div>
 
@@ -115,6 +140,8 @@
         <div class="time-hint">点击任意位置返回</div>
     </div>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="api.js"></script>
     <script src="script.js"></script>
 </body>
 </html>

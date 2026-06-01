@@ -34,18 +34,43 @@ const dom = {
 
 let currentMode = 'idle', breathTimer = null, focusInt = null, isPetting = false, petStartPos = {x:0, y:0};
 let currentImage = null;
+let isLoggedIn = false;
+let useOfflineMode = false;
 
-window.onload = () => { 
-    Memory.init(); createStars(); updateTimeTheme(); loadOldOrbs(); 
+window.onload = async () => { 
+    Memory.init(); 
+    createStars(); 
+    updateTimeTheme();
     TimeTunnel.init();
-    if (!Memory.get('name')) document.getElementById('onboarding').style.display = 'flex'; 
-    else welcomeUser(); 
+    initImageUpload();
+    
+    // 检查是否已登录
+    if (API.isLoggedIn()) {
+        try {
+            await loadEmotionsFromDB();
+            isLoggedIn = true;
+            console.log('✅ 已登录，数据已从数据库加载');
+        } catch (error) {
+            console.log('⚠️ Token失效，使用离线模式');
+            API.logout();
+        }
+    }
+    
+    // 显示认证界面或主界面
+    if (!isLoggedIn && !useOfflineMode) {
+        document.getElementById('auth-screen').style.display = 'flex';
+    } else {
+        loadOldOrbs();
+        if (!Memory.get('name')) {
+            document.getElementById('onboarding').style.display = 'flex';
+        } else {
+            welcomeUser();
+        }
+    }
     
     document.addEventListener('click', (e) => {
         console.log('🎯 全局点击:', e.target, 'class:', e.target.className);
     }, true);
-    
-    initImageUpload();
 };
 
 function initImageUpload() {
@@ -121,6 +146,9 @@ function handleExpress(type) {
         image: currentImage
     };
     Memory.saveOrb(orbData); 
+    
+    // 同步到数据库
+    saveEmotionToDB(orbData);
     
     const orb = createOrbElement(orbData, false);
     animateOrbFromSpirit(orb, orbData.x, orbData.y);
@@ -549,8 +577,14 @@ const TimeTunnel = {
         if (this.currentOrbIndex === -1) return;
         
         let orbs = Memory.getOrbs();
+        const deletedOrb = orbs[this.currentOrbIndex];
         orbs.splice(this.currentOrbIndex, 1);
         localStorage.setItem('spirit_orbs', JSON.stringify(orbs));
+        
+        // 从数据库删除
+        if (deletedOrb && deletedOrb.id) {
+            deleteEmotionFromDB(deletedOrb.id);
+        }
         
         if (this.originOrb) {
             this.originOrb.style.transition = 'all 0.3s ease-out';
@@ -578,4 +612,222 @@ function openTimeTunnel(data, orbElement) {
         TimeTunnel.init();
     }
     TimeTunnel.open(data, orbElement);
+}
+
+// ==================== 认证函数 ====================
+
+async function handleLogin() {
+    const username = document.getElementById('login-username').value;
+    const password = document.getElementById('login-password').value;
+    
+    if (!username || !password) {
+        alert('请输入用户名和密码');
+        return;
+    }
+    
+    try {
+        const result = await API.login(username, password);
+        console.log('✅ 登录成功:', result);
+        
+        isLoggedIn = true;
+        document.getElementById('auth-screen').style.display = 'none';
+        
+        // 从数据库加载数据
+        await loadEmotionsFromDB();
+        
+        // 显示主界面
+        loadOldOrbs();
+        if (!Memory.get('name')) {
+            document.getElementById('onboarding').style.display = 'flex';
+        } else {
+            welcomeUser();
+        }
+    } catch (error) {
+        alert('登录失败: ' + error.message);
+    }
+}
+
+async function handleRegister() {
+    const username = document.getElementById('register-username').value;
+    const password = document.getElementById('register-password').value;
+    const nickname = document.getElementById('register-nickname').value;
+    
+    if (!username || !password) {
+        alert('请输入用户名和密码');
+        return;
+    }
+    
+    try {
+        await API.register(username, password, nickname);
+        alert('注册成功！请登录');
+        showLogin();
+    } catch (error) {
+        alert('注册失败: ' + error.message);
+    }
+}
+
+function showRegister() {
+    document.getElementById('login-form').style.display = 'none';
+    document.getElementById('register-form').style.display = 'flex';
+}
+
+function showLogin() {
+    document.getElementById('register-form').style.display = 'none';
+    document.getElementById('login-form').style.display = 'flex';
+}
+
+function skipLogin() {
+    useOfflineMode = true;
+    document.getElementById('auth-screen').style.display = 'none';
+    loadOldOrbs();
+    
+    if (!Memory.get('name')) {
+        document.getElementById('onboarding').style.display = 'flex';
+    } else {
+        welcomeUser();
+    }
+    
+    showMessage('离线模式：数据仅保存在本地');
+}
+
+// ==================== 数据库同步函数 ====================
+
+async function loadEmotionsFromDB() {
+    try {
+        const emotions = await API.getEmotions();
+        console.log('📂 从数据库加载', emotions.length, '条记录');
+        
+        // 转换数据库格式为本地格式
+        const localEmotions = emotions.map(e => ({
+            id: e.id,
+            type: e.type,
+            text: e.content,
+            time: new Date(e.created_at).toLocaleDateString(),
+            image: e.image_url,
+            x: parseFloat(e.position_x),
+            y: parseFloat(e.position_y)
+        }));
+        
+        // 保存到localStorage
+        localStorage.setItem('spirit_orbs', JSON.stringify(localEmotions));
+    } catch (error) {
+        console.error('加载数据失败:', error);
+        throw error;
+    }
+}
+
+async function saveEmotionToDB(orbData) {
+    if (!isLoggedIn) {
+        console.log('离线模式：仅保存到本地');
+        return;
+    }
+    
+    try {
+        await API.createEmotion(orbData);
+        console.log('✅ 已同步到数据库');
+    } catch (error) {
+        console.error('同步失败:', error);
+    }
+}
+
+async function deleteEmotionFromDB(id) {
+    if (!isLoggedIn || !id) return;
+    
+    try {
+        await API.deleteEmotion(id);
+        console.log('✅ 已从数据库删除');
+    } catch (error) {
+        console.error('删除失败:', error);
+    }
+}
+
+// ==================== 导出日记功能 ====================
+
+async function exportDiary() {
+    const orbs = Memory.getOrbs();
+    
+    if (orbs.length === 0) {
+        alert('还没有记录任何日记哦~');
+        return;
+    }
+    
+    showMessage('正在打包日记...');
+    
+    // 按日期分组
+    const groupedByDate = {};
+    orbs.forEach(orb => {
+        const date = orb.time || '某一天';
+        if (!groupedByDate[date]) {
+            groupedByDate[date] = [];
+        }
+        groupedByDate[date].push(orb);
+    });
+    
+    // 创建JSZip实例
+    const zip = new JSZip();
+    const imgFolder = zip.folder('images');
+    
+    // 生成Markdown内容
+    let markdown = `# 小白团子日记\n\n`;
+    markdown += `> 导出时间：${new Date().toLocaleString('zh-CN')}\n\n`;
+    markdown += `> 共 ${orbs.length} 条记录\n\n`;
+    markdown += `---\n\n`;
+    
+    // 按日期倒序排列
+    const sortedDates = Object.keys(groupedByDate).sort((a, b) => {
+        return new Date(b) - new Date(a);
+    });
+    
+    let imgCounter = 0;
+    
+    sortedDates.forEach(date => {
+        markdown += `## ${date}\n\n`;
+        
+        groupedByDate[date].forEach(orb => {
+            const emoji = orb.type === 'happy' ? '✨' : '💧';
+            const title = orb.type === 'happy' ? '美好回忆' : '消化烦恼';
+            
+            markdown += `### ${emoji} ${title}\n\n`;
+            markdown += `${orb.text}\n\n`;
+            
+            // 如果有图片，保存图片并添加引用
+            if (orb.image) {
+                imgCounter++;
+                const imgFileName = `image_${imgCounter}.png`;
+                
+                // 将base64转为blob
+                const base64Data = orb.image.split(',')[1];
+                imgFolder.file(imgFileName, base64Data, { base64: true });
+                
+                // Markdown中引用图片
+                markdown += `![图片](images/${imgFileName})\n\n`;
+            }
+            
+            markdown += `---\n\n`;
+        });
+    });
+    
+    markdown += `\n\n---\n\n`;
+    markdown += `*由小白团子陪伴系统生成* 💫\n`;
+    
+    // 添加Markdown文件到ZIP
+    zip.file('日记.md', markdown);
+    
+    // 生成ZIP文件并下载
+    const content = await zip.generateAsync({ type: 'blob' });
+    const url = URL.createObjectURL(content);
+    const link = document.createElement('a');
+    link.href = url;
+    
+    // 生成文件名
+    const today = new Date().toISOString().split('T')[0];
+    link.download = `小白团子日记_${today}.zip`;
+    
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    
+    showMessage(`已导出 ${orbs.length} 条日记和 ${imgCounter} 张图片！`);
+    toggleMenu('bag-menu');
 }
